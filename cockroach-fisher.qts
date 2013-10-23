@@ -15,8 +15,6 @@
 
 //Script example for TRIK-based models
 
-print("Kill all humans!")
-
 var s1    = 0  // first sensor
 var s2    = 0  // second sensor
 var u     = 0  // delta
