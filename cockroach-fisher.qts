@@ -1,0 +1,65 @@
+/* Copyright 2013 Nikita Batov
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License. */
+
+
+//Script example for TRIK-based models
+
+print("Kill all humans!")
+
+var s1    = 0  // first sensor
+var s2    = 0  // second sensor
+var u     = 0  // delta
+var s1old = 0  // old value of s1
+var s2old = 0  // old value of s2
+
+var i = 0
+
+const v = 85  // start speed
+
+const k1 = 2.3  // magic numbers
+const k2 = 20 
+
+function stab()
+{
+    for(;;) //Infinity loop. Script is running = Robot is moving
+    {
+    i++;
+
+    //Get sensors data
+	s1 = brick.analogSensor("1").read()
+	s2 = brick.analogSensor("2").read()
+
+	//Delta
+	u  = (-1)*k1*(s2-s1) + k2*((s1 - s1old)-(s2-s2old))
+	
+	//Debug print
+
+	if (i == 10)
+	{
+		print("power 1 = ", v+u)
+		print("power 2 = ", v-u)
+		i=0;
+	}
+	
+	//Setting power on motors
+	brick.powerMotor(1).setPower(v+u)
+	brick.powerMotor(3).setPower(v-u)
+
+	//Save old values
+	s2old=s2
+	s1old=s1
+	}
+}
+
+stab();
