@@ -1,0 +1,23 @@
+brick.keys().buttonPressed.connect(
+  function(code, value) {
+    print("Key code = " + code + ", value = " + value);
+    if (code == 61) {
+      print("Goodbye, cruel world");
+      brick.quit();
+    }
+    if (code == 62 && value == 1) {
+      brick.powerMotor(1).setPower(100);
+    } 
+    if (code == 62 && value == 0) {
+      brick.powerMotor(1).powerOff();
+    }
+    if (code == 63 && value == 1) {
+      brick.powerMotor(2).setPower(100);
+    } 
+    if (code == 63 && value == 0) {
+      brick.powerMotor(2).powerOff();
+    }
+  }
+);
+
+brick.run();
