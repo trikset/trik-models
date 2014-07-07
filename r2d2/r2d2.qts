@@ -1,0 +1,59 @@
+var gamepad = brick.gamepad();
+var servoPitch = brick.motor("E1");
+var servoYaw = brick.motor("E2");
+var powerMotorRight = brick.motor("M1");
+var powerMotorLeft = brick.motor("M2");
+
+gamepad.pad.connect(
+	function(padId, x, y) {
+		if (padId == 1) {
+			servoPitch.setPower(y);
+			servoYaw.setPower(-x);
+		}
+
+		if (padId == 2) {
+			if (x * x + y * y < 100) {
+				powerMotorLeft.powerOff();
+				powerMotorRight.powerOff();
+			} else {
+				powerMotorLeft.setPower(y + x);
+				powerMotorRight.setPower(y - x);
+			}
+		}
+	}
+)
+
+gamepad.padUp.connect(
+	function(padId, x, y) {
+		if (padId == 1) {
+			servoPitch.powerOff();
+			servoYaw.powerOff();
+		}
+	}
+)
+
+gamepad.button.connect(
+	function(buttonId, pressed) {
+		if (pressed == 0) {
+			return;
+		}
+
+		switch (buttonId) {
+			case 1: {
+				brick.display().smile();
+				break;
+			}
+			case 2: {
+				brick.display().sadSmile();
+				break;
+			}
+			case 3: {
+				brick.system("espeak -v russian_test -s 100 \"Hello, i am TRIK\"");
+				break;
+			}
+		}
+	}
+)
+
+brick.system("cvlc \"v4l2:///dev/video0\" --v4l2-height=240 --v4l2-width=432 --v4l2-chroma=MJPG --sout \"#std{access=http{mime=multipart/x-mixed-replace;boundary=--7b3cc56e5f51db803f790dad720ed50a},mux=mpjpeg,dst=:5005}\" :file-caching=100");
+brick.run();
