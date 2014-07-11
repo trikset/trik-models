@@ -12,13 +12,8 @@ gamepad.pad.connect(
 		}
 
 		if (padId == 2) {
-			if (x * x + y * y < 100) {
-				powerMotorLeft.powerOff();
-				powerMotorRight.powerOff();
-			} else {
-				powerMotorLeft.setPower(y + x);
-				powerMotorRight.setPower(y - x);
-			}
+			powerMotorLeft.setPower(y + x);
+			powerMotorRight.setPower(y - x);
 		}
 	}
 )
@@ -28,6 +23,9 @@ gamepad.padUp.connect(
 		if (padId == 1) {
 			servoPitch.powerOff();
 			servoYaw.powerOff();
+		} else if (padId == 2) {
+			powerMotorLeft.powerOff();
+			powerMotorRight.powerOff();
 		}
 	}
 )
@@ -51,9 +49,12 @@ gamepad.button.connect(
 				brick.system("espeak -v russian_test -s 100 \"Hello, i am TRIK\"");
 				break;
 			}
+			case 5: {
+				brick.quit();
+			}
 		}
 	}
 )
 
-brick.system("cvlc \"v4l2:///dev/video0\" --v4l2-height=240 --v4l2-width=432 --v4l2-chroma=MJPG --sout \"#std{access=http{mime=multipart/x-mixed-replace;boundary=--7b3cc56e5f51db803f790dad720ed50a},mux=mpjpeg,dst=:5005}\" :file-caching=100");
+brick.system("mjpg_streamer -i \"input_uvc.so -d /dev/video2 -r 432x240 -f 30\" -o \"output_http.so -w /www\"");
 brick.run();

@@ -11,4 +11,14 @@ To connect:
 Now left pad will control camera direction, right pad will control power motors. 
 Button 1 will show smile on a screen, button 2 will show sad smile, button 3 will order robot to say "Hello, I am TRIK".
 
-To see video, use VLC player, launch it with "vlc http://<robot IP>:5005 :network-caching=100" command, for example, "vlc http://192.168.0.128:5005 :network-caching=100"
+To see video, open http://<Robot IP address>:8080/stream_simple.html in your favorite browser, for example http://192.168.1.1:8080/stream_simple.html.
+
+For best results configure robot as WiFi access point.
+
+Compatibility:
+- requires system image "testing/2014.07.10/" or newer
+- requires trikRuntime-3.0.0-a7-1
+
+Known issues:
+- Script does not kill video capture process, so video will be streamed even afrer script is stopped.
+- Sometimes video device becomes locked for no apparent reason and streaming does not launch at all. Reboot helps.
