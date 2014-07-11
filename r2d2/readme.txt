@@ -1,6 +1,12 @@
 R2D2 remote video surveillance robot.
 
 Consists of 2 power motors, 2 angular servos and USB webcam. Steered from android gamepad. Assembly instruction to be done.
+To install:
+- upload config.xml to /home/root/trik on a robot (using scp on Linux or WinSCP on Windows)
+- upload r2d2.qts to /home/root/trik/scripts
+- reboot (or restart trikGui using remote console)
+- launch script from file browser on robot (or by "cd /home/root/trik/ && ./trikRun -qws scripts/r2d2.qts" from remote console)
+
 To connect:
 - install "TRIK gamepad" application from Google Play (this instruction uses version 1.4)
 - launch it
@@ -9,7 +15,7 @@ To connect:
 - in "Robot TCP port" field enter 4444
 
 Now left pad will control camera direction, right pad will control power motors. 
-Button 1 will show smile on a screen, button 2 will show sad smile, button 3 will order robot to say "Hello, I am TRIK".
+Button 1 will show smile on a screen, button 2 will show sad smile, button 3 will order robot to say "Hello, I am TRIK", button 5 aborts program.
 
 To see video, open http://<Robot IP address>:8080/stream_simple.html in your favorite browser, for example http://192.168.1.1:8080/stream_simple.html.
 
