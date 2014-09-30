@@ -1,7 +1,7 @@
 var gamepad = brick.gamepad();
-var powerMotorRight = brick.motor("M4");
+var powerMotorRight = brick.motor("M3");
 var powerMotorLeft = brick.motor("M2");
-var motorHandUpDown = brick.motor("M3");
+var motorHandUpDown = brick.motor("M4");
 var handServo = brick.motor("E1");
 
 gamepad.pad.connect(
