@@ -1,0 +1,11 @@
+while (true) {
+        var reading = brick.accelerometer().read();
+        var readingString = reading[0] + "," + reading[1] + "," + reading[2];
+        brick.mailbox().send("coords:" + readingString)
+        brick.display().addLabel(readingString, 1, 1);
+        if (brick.keys().wasPressed(KeysEnum.Enter)) {
+                brick.mailbox().send("enter");
+        }
+
+        brick.wait(100);
+}
