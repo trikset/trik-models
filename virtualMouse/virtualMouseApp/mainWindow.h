@@ -29,11 +29,9 @@ public:
 	explicit MainWindow(QWidget *parent = 0);
 
 private slots:
-	void onMagicButtonClick();
 	void onMessage(int sender, QString const &message);
 
 private:
-	QPushButton mMagicButton;
 	mailbox::Mailbox mMailbox;
 };
 

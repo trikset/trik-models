@@ -28,29 +28,33 @@ MainWindow::MainWindow(QWidget *parent)
 	: QMainWindow(parent)
 	, mMailbox(8889)
 {
-	auto const layout = new QVBoxLayout();
-	layout->addWidget(&mMagicButton);
-	mMagicButton.setText("Do something");
-	this->setCentralWidget(new QWidget());
-	this->centralWidget()->setLayout(layout);
-	connect(&mMagicButton, &QPushButton::clicked, this, &MainWindow::onMagicButtonClick);
+	this->setWindowTitle("TRIK Virtual mouse");
 
 	mMailbox.setHullNumber(0);
 	connect(&mMailbox, &Mailbox::newMessage, this, &MainWindow::onMessage);
-}
-
-void MainWindow::onMagicButtonClick()
-{
-	QCursor::setPos({0, 0});
+	mMailbox.connect("192.168.1.1");
 }
 
 void MainWindow::onMessage(int sender, QString const &message)
 {
 	Q_UNUSED(sender);
 
-	if (message == "enter") {
+	if (message == "enterPressed") {
 		mouse_event(MOUSEEVENTF_LEFTDOWN, QCursor::pos().x(), QCursor::pos().y(), 0, 0);
+	} else if (message == "enterReleased") {
 		mouse_event(MOUSEEVENTF_LEFTUP, QCursor::pos().x(), QCursor::pos().y(), 0, 0);
+	} else if (message == "escPressed") {
+		mouse_event(MOUSEEVENTF_RIGHTDOWN, QCursor::pos().x(), QCursor::pos().y(), 0, 0);
+	} else if (message == "escReleased") {
+		mouse_event(MOUSEEVENTF_RIGHTUP, QCursor::pos().x(), QCursor::pos().y(), 0, 0);
+	} else if (message == "upPressed") {
+		keybd_event(VK_UP, 0, 0, 0);
+	} else if (message == "upReleased") {
+		keybd_event(VK_UP, 0, KEYEVENTF_KEYUP, 0);
+	} else if (message == "downPressed") {
+		keybd_event(VK_DOWN, 0, 0, 0);
+	} else if (message == "downReleased") {
+		keybd_event(VK_DOWN, 0, KEYEVENTF_KEYUP, 0);
 	} else {
 		auto data = message.split(':')[1];
 		auto const coordsStringList = data.split(',');
