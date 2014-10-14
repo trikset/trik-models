@@ -1,0 +1,69 @@
+var gamepad = brick.gamepad();
+
+var BUD = brick.motor("M3");
+var LLR = brick.motor("E1");
+var LUD = brick.motor("E2");
+var LRO = brick.motor("C1");
+var LSQ = brick.motor("C2");
+
+gamepad.pad.connect(
+	function(padId, x, y) {
+		if (padId == 1) {
+			BUD.setPower(y);
+			LLR.setPower(-x);
+		}
+
+		if (padId == 2) {
+			LUD.setPower(y);
+			LSQ.setPower(x);
+		}
+	}
+)
+
+gamepad.padUp.connect(
+	function(padId, x, y) {
+		if (padId == 1) {
+			BUD.powerOff();
+		} else if (padId == 2) {
+      //
+		}
+	}
+)
+
+gamepad.wheel.connect(
+	function(perc) {
+  	LRO.setPower(perc);
+	}
+)
+
+gamepad.button.connect(
+	function(buttonId, pressed) {
+		if (pressed == 0) {
+			return;
+		}
+
+		switch (buttonId) {
+			case 1: {
+				brick.stop();
+				break;
+			}
+			case 2: {
+  			LLR.setPower(0);
+  			LUD.setPower(0);
+  			LRO.setPower(0);
+  			LSQ.setPower(0);
+				break;
+			}
+			case 3: {
+				brick.system("espeak -v russian_test -s 100 \"Hello, i am TRIK\"");
+				break;
+			}
+			case 5: {
+				brick.quit();
+			}
+		}
+	}
+)
+
+brick.system("mjpg_streamer -i \"input_uvc.so -d /dev/video2 -r 432x240 -f 30\" -o \"output_http.so -w /www\"");
+brick.run();

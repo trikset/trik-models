@@ -1,0 +1,96 @@
+var stopKey = 108;
+var detectKey = 105;
+var gamepad = brick.gamepad();
+
+var BUD = brick.motor("M1");
+var LLR = brick.motor("E1");
+var LUD = brick.motor("E2");
+var LRO = brick.motor("E3");
+var LSQ = brick.motor("C1");
+
+var LLRpos = 0;
+var LUDpos = 0;
+var lost = 0;
+
+var terminate = 0;
+var next = 0
+brick.run();
+
+LLR.setPower(LLRpos);
+brick.objectSensor().init(true);
+
+var key = 0;
+function wasPressed(_key)
+{
+  key = 0;
+  if(brick.keys().wasPressed(_key))
+  {
+    key = _key;
+    return 1;
+  }
+  else
+  {
+    return 0;
+  }
+}
+
+
+while(!next) {
+  while(!(wasPressed(detectKey)||wasPressed(stopKey))) {
+    brick.wait(100);
+  }
+  switch(key) {
+    case detectKey:
+      brick.objectSensor().detect();
+      break;
+    case stopKey:
+      next = 1;
+      break;
+  }
+  brick.wait(1000);
+}
+
+while(!terminate) {
+  if(brick.keys().wasPressed(stopKey)) {
+    terminate = 1;
+  } else {
+    var s = brick.objectSensor().read()[2];
+    if(s < 5) {
+      if(!lost) {
+        LLRpos = 0;
+        LUDpos = 0;
+        brick.wait(1000);
+        LLR.powerOff();
+        LUD.powerOff();
+        lost = 1;
+      }
+    } else {
+      if(lost) {
+        lost = 0;
+        LLR.setPower(LLRpos);
+      }
+      var x = brick.objectSensor().read()[0];
+      var y = brick.objectSensor().read()[1];
+      if(Math.abs(x) > 5) {
+              if(x > LLRpos) 
+                LLRpos += 1;
+              else
+                LLRpos -= 1;
+              LLR.setPower(LLRpos);
+      }
+      if(Math.abs(y) > 5) {
+              if(y > LUDpos)
+                LUDpos += 1;
+              else
+                LUDpos -= 1;
+              LUD.setPower(LUDpos);
+      }
+    }
+  }
+}
+
+brick.objectSensor().stop();
+brick.stop();
+print("finish");
+brick.quit();
+
