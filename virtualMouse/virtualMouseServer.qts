@@ -60,6 +60,8 @@ brick.keys().buttonPressed.connect(
 			} else {
 				brick.mailbox().send("escReleased");
 			}
+		} else if (code == 116) {
+			brick.quit();
 		} else {
 			print(code);
 		}

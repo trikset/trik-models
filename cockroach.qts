@@ -2,9 +2,9 @@ var k = 0.4;
 var power = 75;
 
 while (true) {
-        var deltaLeft = brick.sensor(1).read();
-        var deltaRight = brick.sensor(2).read();
+        var deltaLeft = brick.sensor("A1").read();
+        var deltaRight = brick.sensor("A2").read();
         var u = k * (deltaLeft - deltaRight);
-        brick.powerMotor(1).setPower(power + u);
-        brick.powerMotor(2).setPower(-power + u);
+        brick.powerMotor("M1").setPower(power + u);
+        brick.powerMotor("M2").setPower(-power + u);
 }
