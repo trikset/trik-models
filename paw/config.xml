@@ -47,7 +47,7 @@ Use it if JCx ports are configured to work as PWM signal generators.
 
 	<!-- Servomotors configuration, maps logical port to device file, file for setting period,
 		 initial period value and type of motor on that port.
-		 Motor type parameters like calibration curve are described separately, in "motorTypes" section. -->
+		 Motor type parameters like calibration curve are described separately, in "servoMotorTypes" section. -->
 	<servoMotors>
 		<servoMotor
 			port="E1"
@@ -130,26 +130,25 @@ Use it if JCx ports are configured to work as PWM signal generators.
 		<powerMotor port="M4" i2cCommandNumber="0x17" invert="false" />
 	</powerMotors>
 
-	<!-- Aanalog sensors configuration, maps logical port to I2C command.
+	<!-- Analog sensors configuration, maps logical port to I2C command.
 		 I2C device path and device id are set separately, in "i2c" section.
-		 Analog sensors do not have a type, because their driver is controlled by high-level
-		 commands and handles sensor specifics by itself. -->
+		 Analog sensor type parameters are described separately, in "analogSensorTypes" section. -->
 	<analogSensors>
-		<analogSensor port="A1" i2cCommandNumber="0x25" />
-		<analogSensor port="A2" i2cCommandNumber="0x24" />
-		<analogSensor port="A3" i2cCommandNumber="0x23" />
-		<analogSensor port="A4" i2cCommandNumber="0x22" />
-		<analogSensor port="A5" i2cCommandNumber="0x21" />
-		<analogSensor port="A6" i2cCommandNumber="0x20" />
+		<analogSensor port="A1" i2cCommandNumber="0x25" defaultType="defaultSensor" />
+		<analogSensor port="A2" i2cCommandNumber="0x24" defaultType="defaultSensor" />
+		<analogSensor port="A3" i2cCommandNumber="0x23" defaultType="defaultSensor" />
+		<analogSensor port="A4" i2cCommandNumber="0x22" defaultType="defaultSensor" />
+		<analogSensor port="A5" i2cCommandNumber="0x21" defaultType="defaultSensor" />
+		<analogSensor port="A6" i2cCommandNumber="0x20" defaultType="defaultSensor" />
 	</analogSensors>
 
 	<!-- Encoders configuration, maps logical port to I2C command.
 		 I2C device path and device id are set separately, in "i2c" section. -->
 	<encoders>
-		<encoder port="B1" i2cCommandNumber="0x30" />
-		<encoder port="B2" i2cCommandNumber="0x31" />
-		<encoder port="B4" i2cCommandNumber="0x32" />
-		<encoder port="B3" i2cCommandNumber="0x33" />
+		<encoder port="B1" i2cCommandNumber="0x30" defaultType="encoder95"/>
+		<encoder port="B2" i2cCommandNumber="0x31" defaultType="encoder95"/>
+		<encoder port="B4" i2cCommandNumber="0x32" defaultType="encoder95"/>
+		<encoder port="B3" i2cCommandNumber="0x33" defaultType="encoder95"/>
 	</encoders>
 
 	<!-- Description of servo motor types used in servo motors mapping. Supplied values correspond to
@@ -164,12 +163,20 @@ Use it if JCx ports are configured to work as PWM signal generators.
 	<!-- Digital sensors configuration, maps logical port to digital sensor device file and digital sensor type used by default
 		 (if not configured programmatically). -->
 	<digitalSensors>
-<!--		<digitalSensor port="D1" deviceFile="/sys/devices/platform/da850_trik/sensor_d1" defaultType="lightSensor" />
-		<digitalSensor port="D2" deviceFile="/sys/devices/platform/da850_trik/sensor_d2" defaultType="lightSensor" /> -->
+		<digitalSensor port="D1" deviceFile="/sys/devices/platform/da850_trik/sensor_d1" defaultType="rangeSensor" />
+		<digitalSensor port="D2" deviceFile="/sys/devices/platform/da850_trik/sensor_d2" defaultType="rangeSensor" />
 		<digitalSensor port="F1" deviceFile="/sys/devices/platform/da850_trik/sensor_dc" defaultType="volumeSensor" />
-		<accelerometer min="-32767" max="32767" deviceFile="/dev/input/by-path/platform-i2c_davinci.1-event" disabled="false" />
+		<accelerometer min="-32767" max="32767" deviceFile="/dev/input/event1" disabled="false" />
 		<gyroscope min="-32767" max="32767" deviceFile="/dev/input/by-path/platform-spi_davinci.1-event" disabled="false" />
 	</digitalSensors>
+
+	<!-- Analog sensor types.
+		 We use linear subjection to normalize sensor values. To calibrate each type of sensor,
+		 we need two raw values and two corresponding normalized values. -->
+	<analogSensorTypes>
+		<defaultSensor rawValue1="0" rawValue2="1024" normalizedValue1="0" normalizedValue2="100" />
+		<distanceSensor rawValue1="750" rawValue2="400" normalizedValue1="10" normalizedValue2="20" />
+	</analogSensorTypes>
 
 	<!-- Description of sensor types used in digital sensor mappings. Provides minimal reading value
 		 (which will be 0 in client program) and maximal reading value (which will be 100). -->
@@ -178,6 +185,12 @@ Use it if JCx ports are configured to work as PWM signal generators.
 		<volumeSensor min="0" max="100"/>
 	</digitalSensorTypes>
 
+	<!-- Description of encoder types. Provides a coefficient for converting raw encoder values to degrees. -->
+	<encoderTypes>
+		<encoder95 rawToDegrees="0.02304708" />
+		<encoder126 rawToDegrees="0.03033597" />
+	</encoderTypes>
+
 	<!-- Format for playSound command, used to play .wav files. %1 designates file name to be played. -->
 	<playWavFile command="aplay --quiet &quot;%1&quot; &amp;" />
 
@@ -185,7 +198,7 @@ Use it if JCx ports are configured to work as PWM signal generators.
 	<playMp3File command="cvlc --quiet &quot;%1&quot; &amp;" />
 
 	<!-- Device files and on/off values for LED on a brick. -->
-	<led green="/sys/class/leds/led_green/brightness" red="/sys/class/leds/led_red/brightness" on="0" off="1" />
+	<led green="/sys/class/leds/led_green/brightness" red="/sys/class/leds/led_red/brightness" on="1" off="0" />
 
 	<!--Device file for keys on a brick -->
 	<keys deviceFile="/dev/input/event0" />
@@ -194,14 +207,18 @@ Use it if JCx ports are configured to work as PWM signal generators.
 	<i2c path="/dev/i2c-2" deviceId="0x48" />
 
 	<!-- Settings for virtual camera line sensor. -->
-	<lineSensor script="/etc/init.d/line-sensor.sh" inputFile="/run/line-sensor.in.fifo" outputFile="/run/line-sensor.out.fifo" toleranceFactor="1.0" disabled="false" />
+	<lineSensor script="/etc/init.d/line-sensor-ov7670.sh" inputFile="/run/line-sensor.in.fifo" outputFile="/run/line-sensor.out.fifo" toleranceFactor="1.0" disabled="false" />
 
 	<!-- Settings for virtual camera object detector sensor. -->
-	<objectSensor script="/etc/init.d/object-sensor.sh" inputFile="/run/object-sensor.in.fifo" outputFile="/run/object-sensor.out.fifo" toleranceFactor="1.0" disabled="false" />
+	<objectSensor script="/etc/init.d/object-sensor-ov7670.sh" inputFile="/run/object-sensor.in.fifo" outputFile="/run/object-sensor.out.fifo" toleranceFactor="1.0" disabled="false" />
 
 	<!-- Settings for virtual camera MxN color sensor. It splits field of view of a camera into MxN grid and reports dominant color in each cell of a grid. -->
-	<colorSensor script="/etc/init.d/mxn-sensor.sh" inputFile="/run/mxn-sensor.in.fifo" outputFile="/run/mxn-sensor.out.fifo" m="3" n="3" disabled="false" />
+	<colorSensor script="/etc/init.d/mxn-sensor-ov7670.sh" inputFile="/run/mxn-sensor.in.fifo" outputFile="/run/mxn-sensor.out.fifo" m="3" n="3" disabled="false" />
 
 	<!-- Settings for gamepad TCP server to communicate with Android "TRIK Gamepad" application -->
 	<gamepad port="4444" disabled="false" />
+
+	<!-- Settings for mailbox server (which enables communication between robots) -->
+	<mailbox port="8889" disabled="false" />
+
 </config>

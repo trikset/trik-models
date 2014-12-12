@@ -1,0 +1,89 @@
+var stopKey = 108;
+var startKey = 105;
+
+var left = brick.motor("M1");
+var right = brick.motor("M4");
+
+var p = 0.3;
+var i = 0.001;
+var k = 3.5;
+
+var x = 0;
+var xold = 0;
+var speed = 26;
+
+brick.run();
+brick.lineSensor().init(true);
+
+var key = 0;
+function wasPressed(_key)
+{
+  key = 0;
+  if(brick.keys().wasPressed(_key))
+  {
+    key = _key;
+    return 1;
+  }
+  else
+  {
+    return 0;
+  }
+}
+
+var next = 0;
+var terminate = 0;
+
+while(!next) {
+  while(!(wasPressed(startKey)||wasPressed(stopKey))) {
+    brick.wait(100);
+  }
+  switch(key) {
+    case startKey:
+      next = 1;
+      break;
+    case stopKey:
+//      brick.stop();
+      next = 1;
+      terminate = 1;
+      break;
+  }
+  brick.wait(1000);
+}
+
+var firstTime = 1;
+while(!terminate) {
+  if(brick.keys().wasPressed(stopKey)) {
+    terminate = 1;
+  } else {
+    x = brick.lineSensor().read()[0];
+    s = brick.lineSensor().read()[2];
+    print(x, " ", s);
+    if(s < 3) {
+      firstTime = 1;
+      if(xold < 0) {
+        print("left");
+        left.setPower(0);                      
+        right.setPower(60);
+      } else {
+        print("right");
+        left.setPower(60);                      
+        right.setPower(0);
+      }
+    } else {
+      if (firstTime) {
+        xold = x;
+        firstTime = 0;
+      }
+      var yaw = x*p + (x - xold)*k + (x+xold)*i;
+      left.setPower(speed + yaw);
+      right.setPower(speed - yaw);
+      xold = x;
+    }
+  }
+}
+
+//brick.lineSensor().stop();
+brick.stop();
+print("finish");
+//brick.quit();
+
