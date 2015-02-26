@@ -1,0 +1,49 @@
+var reading = [];
+
+ brick.accelerometer().newData.connect(
+	function (data) {
+		reading = data;
+	}
+);
+
+brick.repeat(100, function() {
+	var readingString = reading[0] + "," + reading[1] + "," + reading[2];
+	brick.mailbox().send("coords:" + readingString)
+	brick.display().addLabel(readingString, 1, 1);
+});
+
+brick.keys().buttonPressed.connect(
+	function(code, value) {
+		if (code == KeysEnum.Enter) {
+			if (value == 1) {
+				brick.mailbox().send("enterPressed");
+			} else {
+				brick.mailbox().send("enterReleased");
+			}
+		} else if (code == KeysEnum.Up) {
+			if (value == 1) {
+				brick.mailbox().send("upPressed");
+			} else {
+				brick.mailbox().send("upReleased");
+			}
+		} else if (code == KeysEnum.Down) {
+			if (value == 1) {
+				brick.mailbox().send("downPressed");
+			} else {
+				brick.mailbox().send("downReleased");
+			}
+		} else if (code == 1) {
+			if (value == 1) {
+				brick.mailbox().send("escPressed");
+			} else {
+				brick.mailbox().send("escReleased");
+			}
+		} else if (code == 116) {
+			brick.quit();
+		} else {
+			print(code);
+		}
+	}
+);
+
+brick.run();

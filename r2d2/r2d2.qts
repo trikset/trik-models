@@ -46,7 +46,7 @@ gamepad.button.connect(
 				break;
 			}
 			case 3: {
-				brick.system("espeak -v russian_test -s 100 \"Hello, i am TRIK\"");
+				brick.say("Hello, i am TRIK");
 				break;
 			}
 			case 5: {
