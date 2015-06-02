@@ -38,7 +38,7 @@ gamepad.button.connect(
   function(buttonId, pressed) {
     switch (buttonId) {
       case 1: {
-        script.system("espeak -s 90 \"Hello, i am TRIK robot\"");
+        brick.say("Hello, i am TRIK");
         break;
       }
       case 2: {
@@ -50,11 +50,10 @@ gamepad.button.connect(
       case 3: {
       	script.system("/etc/init.d/mjpg-streamer-ov7670.sh stop");
       	script.wait(3000);
-      	script.system("/etc/init.d/mjpg-streamer-ov7670.sh stop");
+      	script.system("/etc/init.d/mjpg-encoder-ov7670.sh stop");
 	      break;
 	    }
       case 4: {
-        print("pew");
 	      script.wait(3000);
         brick.lineSensor().init(true); 
         print("edge line sensor started");
@@ -76,10 +75,9 @@ gamepad.button.connect(
   }
 )
 
-script.run();
 script.system("/etc/init.d/mjpg-encoder-ov7670.sh restart");
 script.wait(3000);
 script.system("/etc/init.d/mjpg-streamer-ov7670.sh restart");
-//brick.lineSensor().init(true); 
+script.run();
 
 
