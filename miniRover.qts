@@ -60,7 +60,7 @@ gamepad.button.connect(
       	script.system("/etc/init.d/mjpg-streamer-ov7670.sh stop");
       	script.wait(3000);
       	script.system("/etc/init.d/mjpg-encoder-ov7670.sh stop");
-	      script.wait(3000);
+	script.wait(3000);
         brick.lineSensor().init(true); 
         print("edge line sensor started");
         break;
