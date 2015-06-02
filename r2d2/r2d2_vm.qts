@@ -50,11 +50,14 @@ gamepad.button.connect(
       }
       case 5: {
         script.system("killall mjpg_streamer");
+        script.system("killall mjpg_encoder");
         brick.quit();
       }
     }
   }
 )
 
-script.system("mjpg_streamer -i \"input_uvc.so -d /dev/video2 -r 432x240 -f 30\" -o \"output_http.so -w /usr/share/mjpg-streamer/www\"");
+script.system("/etc/init.d/mjpg-encoder-ov7670.sh restart");
+script.wait(3000);
+script.system("/etc/init.d/mjpg-streamer-ov7670.sh restart");
 script.run();
