@@ -85,5 +85,3 @@ script.system("/etc/init.d/mjpg-encoder-ov7670.sh restart");
 script.wait(3000);
 script.system("/etc/init.d/mjpg-streamer-ov7670.sh restart");
 script.run();
-
-

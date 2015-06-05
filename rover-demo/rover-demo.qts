@@ -1,105 +1,29 @@
-var gamepad = brick.gamepad();
-
-var arm   = brick.motor("M4");
-var right = brick.motor("M1");
-var left  = brick.motor("M3");
-var hand  = brick.motor("E1");
-
-var led   = brick.motor("M2");
-
-var sound = "media/psy_low_short.wav";
-
-brick.run();
-
-gamepad.pad.connect(
-  function(padId, x, y) {
-    if (padId == 2) {
-      arm.setPower(y);
-      hand.setPower(-x);
-    }
-    if (padId == 1) {
-      left.setPower(y - x);
-      right.setPower(y + x);
-  		led.setPower(Math.abs(y));
-    }
-  }
-)
-
-gamepad.padUp.connect(
-  function(padId, x, y) {
-    if (padId == 2) {
-      arm.powerOff();
-      hand.powerOff();
-    }
-    if (padId == 1) {
-      left.powerOff();
-      right.powerOff();
-			led.powerOff();
-    }
-  }
-)
-
-gamepad.wheel.connect(
-	function(percent) {
-		left.setPower(80 - percent / 2);
-		right.setPower( 80 + percent / 2);
-	}
-)
-
-gamepad.button.connect(
-  function(buttonId, pressed) {
-    switch (buttonId) {
-      case 2: {
-        brick.display().sadSmile();
-        brick.wait(2000);
-        brick.display().smile();
-        break;
-      }
-      case 1: {
-        brick.system("espeak -s 90 \"Hello, i am TRIK robot\"");
-        break;
-      }
-      case 3: brick.playSound(sound); break;
-      case 4: brick.objectSensor().init(true); break;
-      case 5: brick.objectSensor().detect(); break;
-      default: break;
-    }
-  }
-)
-
-brick.keys().buttonPressed.connect(
-  function(code, state) {
-    if (state == 0) 
-		  return;
-
-    if (code == 1) {
-        main_loop();
-        return;
-    }
-    
-    if (code == 103 || code == 105 || code == 108)
-      return;
-    
-	  brick.objectSensor().stop();
-	  brick.wait(1000);	
-	  brick.stop();
-	  brick.quit();
-  }
-) 
+var left  = brick.motor("M1");
+var right = brick.motor("M2");
+var arm   = brick.motor("E1");
+var head  = brick.motor("E2");
 
 var stopKey   = 108;
+/*
 var detectKey = 105;
 var fixKey    = 103;
+*/
 
 var xPK = 0.35;
 var xIK = 0.005;
 var xDK = 0.25;
 
-
-var minspeed  = 20;
+var minspeed  = 60;
 var terminate = 0;
-var fixLocs   = [0,0,0];
+var fixLocs   = [0,0,40];
 var m_chw     = 1;
+
+var armMax = 50;
+var headMax = 50;
+
+
+var armPos  = 30;
+var headPos = 0;
 
 function main_loop() 
 {
@@ -107,42 +31,38 @@ function main_loop()
   var locsold = [0,0,0];
 
   terminate = 0;
-  hand.setPower(-100);
-  brick.wait(500);
-  hand.powerOff();
+  
+  head.setPower(headPos);
+  arm.setPower(armPos);
+  script.wait(500);
+  head.powerOff();
 
-  brick.keys().wasPressed(stopKey); //lol hack?
-  brick.objectSensor().init(true);
+  brick.lineSensor("video0").init(true);
+  script.wait(3000);
+  script.system("echo \"hsv 0 179 50 50 90 10\" > /run/object-sensor.in.fifo");
   
   while(!brick.keys().wasPressed(stopKey)) {
-    if(brick.keys().wasPressed(detectKey)) {     
-      brick.objectSensor().detect();
-    } else if(brick.keys().wasPressed(fixKey)) {     
-      fixLocs = brick.objectSensor().read();     
-    }
-    brick.wait(100);
+    script.wait(100);
   }
-  
+
+  print("go!");
   while(!terminate) {
     if(brick.keys().wasPressed(stopKey)) {     
       terminate = 1;          
-    } else if(brick.keys().wasPressed(detectKey)) {     
-      brick.objectSensor().detect();
-    } else if(brick.keys().wasPressed(fixKey)) {     
-      fixLocs = brick.objectSensor().read();
     } else {
-      locs = brick.objectSensor().read();
+      locs = brick.lineSensor("video0").read();
       if (locs[2] > 2) {
         trackingChasis(locs, locsold);
         trackingArm(locs);
-        trackingHand(locs);
+        trackingHead(locs);
+        trackingControl(locs);
       } else {
         stopMotors();
       }
       
       locsold = locs;      
     }
-    brick.wait(30);
+    script.wait(30);
   }
 
   stopMotors();
@@ -152,7 +72,7 @@ function stopMotors() {
   arm.powerOff();
   left.powerOff();
   right.powerOff();
-  hand.powerOff();
+  head.powerOff();
 }
 
 function trackingChasis(locs, locsold)
@@ -179,30 +99,40 @@ function trackingArm(locs)
   var speed = pp(locs[1], -100, fixLocs[1], 100);
   if (Math.abs(speed)>10) { 
     m_chw = 0;
-    speed += sign(speed)*20;
+    armPos = pp(armPos - sign(speed), -100, 0, 100);
   } else {
     speed = 0;
     m_chw = 1;
   }
-  arm.setPower(-speed);
+  arm.setPower(armPos);
 }
 
-function trackingHand(locs)
+function trackingHead(locs)
+{
+  var speed = pp(locs[1], -100, fixLocs[1], 100);
+  if (Math.abs(speed)>10) { 
+    m_chw = 0;
+    if(headPos < armMax) {
+      headPos =  pp(headPos + sign(speed), -100, 0, 100);
+    }
+  } else {
+    speed = 0;
+    m_chw = 1;
+  }
+  head.setPower(headPos);
+}
+
+function trackingControl(locs)
 {
   xd = Math.abs(locs[0] - fixLocs[0]);
   yd = Math.abs(locs[1] - fixLocs[1]);
   md = Math.abs(locs[2] - fixLocs[2]);
   print("x->", xd, "y->", yd, "m->", md);
   if ((xd < 5) && (yd < 5) && (md < 5)){ 
-    arm.powerOff();
     left.powerOff();
     right.powerOff();
-    hand.setPower(-100);
-    brick.wait(1000);
-    hand.setPower(100);
-    brick.wait(1000);
-    hand.powerOff();
     terminate = 1;
+    print("done!");
   }
 }
 
@@ -229,4 +159,6 @@ function pp(_val, _min, _zero, _max)
     return 0;
 }
 
+script.run();
 
+main_loop();
