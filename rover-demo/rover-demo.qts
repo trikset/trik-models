@@ -4,26 +4,22 @@ var arm   = brick.motor("E1");
 var head  = brick.motor("E2");
 
 var stopKey   = 108;
-/*
-var detectKey = 105;
-var fixKey    = 103;
-*/
 
 var xPK = 0.5;
 
-var xIK = 0.005;
-var xDK = 0.25;
-
+var xIK = 0;//.005;
+var xDK = 0;//.25;
 
 var minspeed  = 60;
+
 var terminate = 0;
 var succes    = 0;
+
 var fixLocs   = [0,0,40];
 var m_chw     = 1;
 
 var armMax = 50;
 var headMax = 50;
-
 
 var armPos  = 30;
 var headPos = 0;
@@ -32,7 +28,7 @@ function main_loop()
 {
   var locs    = [0,0,0];
   var locsold = [0,0,0];
-
+  
   terminate = 0;
   
   head.setPower(headPos);
@@ -49,6 +45,7 @@ function main_loop()
   }
 
   print("go!");
+  script.wait(1000);
   while(!terminate) {
     if(brick.keys().wasPressed(stopKey)) {     
       terminate = 1;          
@@ -60,16 +57,27 @@ function main_loop()
         trackingHead(locs);
         trackingControl(locs);
       } else {
-        stopMotors();
+      //TODO: search
+        if(locs[0]>0) {
+          left.setPower(80);
+          right.setPower(-80);
+        } else {
+          left.setPower(-80);
+          right.setPower(80);
+        }
       }
       
       locsold = locs;      
     }
+    print(locs[2]);
     script.wait(30);
   }
 
   if(succes)  {
 //    brick.say("Done!");
+    script.system("killall object-sensor-webcam");
+    script.wait(2000);
+    script.system("v4l2grab -W 320 -H 240 -d /dev/video2 -o doc.jpg");
     script.wait(3000);
     left.setPower(80);
     right.setPower(-80);
