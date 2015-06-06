@@ -5,48 +5,40 @@ var head  = brick.motor("E2");
 
 var stopKey   = 108;
 
-var xPK = 0.5;
+var sat    = 5;
+var satTol = 5;
+var val    = 97;
+var valTol = 3;
+var cmd = "echo \"hsv 0 179 " + sat + " " + satTol + " " + val + " " + valTol + " " + "\" > /run/object-sensor.in.fifo";
 
-var xIK = 0;//.005;
-var xDK = 0;//.25;
-
-var minspeed  = 60;
-
-var terminate = 0;
-var succes    = 0;
-
-var fixLocs   = [0,0,40];
-var m_chw     = 1;
-
-var armMax = 50;
-var headMax = 50;
-
-var armPos  = 30;
-var headPos = 0;
-
-function main_loop() 
-{
-  var locs    = [0,0,0];
-  var locsold = [0,0,0];
-  
-  terminate = 0;
-  
-  head.setPower(headPos);
-  arm.setPower(armPos);
-  script.wait(500);
-  head.powerOff();
-
-  brick.lineSensor("video0").init(true);
-  script.wait(3000);
-  script.system("echo \"hsv 0 179 15 15 85 15\" > /run/object-sensor.in.fifo");
-  
-  while(!brick.keys().wasPressed(stopKey)) {
-    script.wait(100);
+gamepad.pad.connect(
+  function(padId, x, y) {
+    if (padId == 1) {
+      if (y > 0) {
+        sat    += 1;
+        satTol += 1;
+      } else {
+        sat    -= 1;
+        satTol -= 1;
+      }
+    }
+    if (padId == 2) {
+      if (y > 0) {
+        val    += 1;
+        valTol -= 1;
+      } else {
+        val    -= 1;
+        valTol += 1;
+      }
+    }
+    cmd = "echo \"hsv 0 179 " + sat + " " + satTol + " " + val + " " + valTol + " " + "\" > /run/object-sensor.in.fifo";
+    system.script(cmd);
   }
+)
 
-  print("go!");
-  script.wait(1000);
-  while(!terminate) {
+
+function main_loop() {
+  if(!terminate) {
     if(brick.keys().wasPressed(stopKey)) {     
       terminate = 1;          
     } else {
@@ -58,7 +50,8 @@ function main_loop()
         trackingControl(locs);
       } else {
       //TODO: search
-        if(locs[0]>0) {
+        print("lost");
+        if(locs[0] > 0) {
           left.setPower(80);
           right.setPower(-80);
         } else {
@@ -69,12 +62,10 @@ function main_loop()
       
       locsold = locs;      
     }
-    print(locs[2]);
-    script.wait(30);
   }
+  
+  if(succes) {
 
-  if(succes)  {
-//    brick.say("Done!");
     script.system("killall object-sensor-webcam");
     script.wait(2000);
     script.system("v4l2grab -W 320 -H 240 -d /dev/video2 -o doc.jpg");
@@ -82,10 +73,12 @@ function main_loop()
     left.setPower(80);
     right.setPower(-80);
     script.wait(3000);
+    script.quit();
   }
   
-  stopMotors();
+  print(sat,satTol, val, valTol);
 }
+
 
 function stopMotors() {
   arm.powerOff();
@@ -179,6 +172,51 @@ function pp(_val, _min, _zero, _max)
     return 0;
 }
 
+
+var xPK = 0.5;
+var xIK = 0;//.005;
+var xDK = 0;//.25;
+
+var minspeed  = 60;
+
+var terminate = 0;
+var succes    = 0;
+
+var fixLocs   = [0,0,40];
+var m_chw     = 1;
+
+var armMax = 50;
+var headMax = 50;
+
+var armPos  = 30;
+var headPos = 0;
+
+var locs    = [0,0,0];
+var locsold = [0,0,0];
+
+var timer = script.timer(30);
+
+head.setPower(headPos);
+arm.setPower(armPos);
+script.wait(500);
+head.powerOff();
+print("init");
+brick.lineSensor("video0").init(true);
+script.wait(3000);
+print("init done");
+script.system(cmd);
+
+
+
+while(!brick.keys().wasPressed(stopKey)) {
+  script.wait(100);
+}
+
+timer.timeout.connect(main_loop);
+timer.start();
+
+print("go!");
+script.wait(1000);
 script.run();
 
-main_loop();
+
