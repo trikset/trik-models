@@ -42,7 +42,7 @@ function main_loop()
 
   brick.lineSensor("video0").init(true);
   script.wait(3000);
-  script.system("echo \"hsv 0 179 20 20 80 20\" > /run/object-sensor.in.fifo");
+  script.system("echo \"hsv 0 179 15 15 85 15\" > /run/object-sensor.in.fifo");
   
   while(!brick.keys().wasPressed(stopKey)) {
     script.wait(100);
