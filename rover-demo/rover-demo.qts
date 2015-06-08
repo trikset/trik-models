@@ -36,51 +36,88 @@ gamepad.pad.connect(
   }
 )
 
-function m_loop() {
-  if(!terminate) {
-    if(brick.keys().wasPressed(stopKey)) {     
-      terminate = 1;          
-    } else {
-      locs = brick.lineSensor("video0").read();
-      if (locs[2] > 2) {
-        trackingChasis(locs, locsold);
-        trackingArm(locs);
-        trackingHead(locs);
-        trackingControl(locs);
-        locsold = locs;    
-      } else {
-        print("lost");
-      //TODO: search
-        var theshold = 80;
-        if(locsold[0] > theshold) {
-          left.setPower(80);
-          right.setPower(-80);
-        } else if(locsold[0] < -theshold) {
-          left.setPower(-80);
-          right.setPower(80);
-        } else {
-          left.setPower(0);
-          right.setPower(0);
-        }
-      }
-
-    }
-  } else {
-    brick.stop();
-    script.quit()
-  }
-  
-  if(succes) {
-    script.system("killall object-sensor-webcam");
-    script.wait(2000);
+function makePhoto(){
+    brick.lineSensor("video0").stop();
+    script.wait(5000);
     script.system("v4l2grab -W 320 -H 240 -d /dev/video2 -o doc.jpg");
     script.wait(3000);
+}
+
+function m_search() {
+  locs = brick.lineSensor("video0").read();
+  if (locs[2] > 2) {
+    trackingChasis(locs, locsold);
+    trackingArm(locs);
+    trackingHead(locs);
+    trackingControl(locs);
+    locsold = locs;    
+  } else {
+    print("lost");
+    var theshold = 80;
+    if(locsold[0] > theshold) {
+      left.setPower(80);
+      right.setPower(-80);
+    } else if(locsold[0] < -theshold) {
+      left.setPower(-80);
+      right.setPower(80);
+    } else {
+      left.setPower(0);
+      right.setPower(0);
+    }
+  }
+}
+
+function m_loop() {
+  if(!succes) {
+    if(!terminate) {
+      if(brick.keys().wasPressed(stopKey)) {     
+        terminate = 1;          
+      } else {
+        m_search();
+      }
+    } else {
+      brick.stop();
+      script.quit()
+    }
+  }
+  
+  if(succes) { //if picture was reached
+    makePhoto();
+    
+    //trun on 180 degrees
     left.setPower(80);
     right.setPower(-80);
     script.wait(3000);
-    brick.stop();
-    timer.stop();
-    script.quit();
+    
+    if(letsSearchForSecondImage) {    //lets find second image!
+      print("searching for 2nd image");
+      succes = 0;      
+      
+      armPos  = armMax;
+      headPos = 0;    
+      
+      left.setPower(0);
+      right.setPower(0);
+      
+      head.setPower(headPos);
+      arm.setPower(armPos);
+      script.wait(500);
+      head.powerOff();
+      
+
+      print("init video sensor");
+      brick.lineSensor("video0").init(true);
+      script.wait(3000);
+      print("init done");
+
+      script.system(setSatVal(sat, satTol, val, valTol));
+     
+    } else {     //both images was found
+      print("both images was found");
+      brick.stop();
+      timer.stop();
+      script.quit();
+    }
   }
   
   print(locs);
@@ -118,7 +155,7 @@ function trackingArm(locs)
   var speed = pp(locs[1], -100, fixLocs[1], 100);
   if (Math.abs(speed)>10) { 
     m_chw = 0;
-    armPos = pp(armPos + sign(speed), -100, 0, 100);
+    armPos = pp(armPos - sign(speed), -100, 0, 100);
   } else {
     speed = 0;
     m_chw = 1;
@@ -150,8 +187,8 @@ function trackingControl(locs)
   if ((xd < 5) && (yd < 5) && (md < 5)){ 
     left.powerOff();
     right.powerOff();
-    terminate = 1;
     succes = 1;
+    letsSearchForSecondImage = !letsSearchForSecondImage;
     print("done!");
   }
 }
@@ -192,14 +229,16 @@ var succes    = 0;
 var fixLocs   = [0,0,40];
 var m_chw     = 1;
 
-var armMax =  50;
+var armMax  = 30;
 var headMax = 50;
 
-var armPos  = 30;
-var headPos = 0;
+var armPos  = armMax;
+var headPos = -30;
 
 var locs    = [0,0,0];
 var locsold = [0,0,0];
+
+var letsSearchForSecondImage = 0;
 
 head.setPower(headPos);
 arm.setPower(armPos);
