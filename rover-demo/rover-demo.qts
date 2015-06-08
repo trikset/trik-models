@@ -32,7 +32,7 @@ gamepad.pad.connect(
       }
     }
     cmd = "echo \"hsv 0 179 " + sat + " " + satTol + " " + val + " " + valTol + " " + "\" > /run/object-sensor.in.fifo";
-    system.script(cmd);
+    script.system(cmd);
   }
 )
 
@@ -50,12 +50,15 @@ function m_loop() {
       } else {
       //TODO: search
         print("lost");
-        if(locs[0] > 0) {
+        if(locs[0] > 80) {
           left.setPower(80);
           right.setPower(-80);
-        } else {
+        } else if(locs[0] < 80) {
           left.setPower(-80);
           right.setPower(80);
+        } else {
+          left.setPower(0);
+          right.setPower(0);
         }
       }
       
@@ -76,7 +79,7 @@ function m_loop() {
     right.setPower(-80);
     script.wait(3000);
     brick.stop();
-    brick.quit();
+    script.quit();
   }
   
   print(sat,satTol, val, valTol);
