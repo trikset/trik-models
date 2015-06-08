@@ -62,6 +62,9 @@ function main_loop() {
       
       locsold = locs;      
     }
+  } else {
+    brick.stop();
+    script.quit()
   }
   
   if(succes) {
@@ -73,6 +76,7 @@ function main_loop() {
     left.setPower(80);
     right.setPower(-80);
     script.wait(3000);
+    brick.stop();
     script.quit();
   }
   
@@ -218,5 +222,3 @@ timer.start();
 print("go!");
 script.wait(1000);
 script.run();
-
-
