@@ -36,8 +36,7 @@ gamepad.pad.connect(
   }
 )
 
-
-function main_loop() {
+function m_loop() {
   if(!terminate) {
     if(brick.keys().wasPressed(stopKey)) {     
       terminate = 1;          
@@ -77,7 +76,7 @@ function main_loop() {
     right.setPower(-80);
     script.wait(3000);
     brick.stop();
-    script.quit();
+    brick.quit();
   }
   
   print(sat,satTol, val, valTol);
@@ -198,8 +197,6 @@ var headPos = 0;
 var locs    = [0,0,0];
 var locsold = [0,0,0];
 
-var timer = script.timer(30);
-
 head.setPower(headPos);
 arm.setPower(armPos);
 script.wait(500);
@@ -208,15 +205,18 @@ print("init");
 brick.lineSensor("video0").init(true);
 script.wait(3000);
 print("init done");
-script.system(cmd);
+script.system(cmd); //set hsv
 
-
+var timer = script.timer(30);
+timer.timeout.connect(m_loop);
+timer.stop();
 
 while(!brick.keys().wasPressed(stopKey)) {
+  timer.stop();
+  print(sat,satTol, val, valTol);
   script.wait(100);
 }
 
-timer.timeout.connect(main_loop);
 timer.start();
 
 print("go!");
