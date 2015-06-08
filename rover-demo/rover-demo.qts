@@ -51,10 +51,11 @@ function m_loop() {
       } else {
         print("lost");
       //TODO: search
-        if(locsold[0] > 80) {
+        var theshold = 80;
+        if(locsold[0] > theshold) {
           left.setPower(80);
           right.setPower(-80);
-        } else if(locsold[0] < -80) {
+        } else if(locsold[0] < -theshold) {
           left.setPower(-80);
           right.setPower(80);
         } else {
@@ -117,7 +118,7 @@ function trackingArm(locs)
   var speed = pp(locs[1], -100, fixLocs[1], 100);
   if (Math.abs(speed)>10) { 
     m_chw = 0;
-    armPos = pp(armPos - sign(speed), -100, 0, 100);
+    armPos = pp(armPos + sign(speed), -100, 0, 100);
   } else {
     speed = 0;
     m_chw = 1;
