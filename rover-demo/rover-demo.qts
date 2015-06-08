@@ -9,7 +9,8 @@ var sat    = 5;
 var satTol = 5;
 var val    = 92;
 var valTol = 8;
-var cmd = "echo \"hsv 0 179 " + sat + " " + satTol + " " + val + " " + valTol + " " + "\" > /run/object-sensor.in.fifo";
+
+function setSatVal(sat, satTol, val, valTol) {return "echo \"hsv 0 179 " + sat + " " + satTol + " " + val + " " + valTol + " " + "\" > /run/object-sensor.in.fifo"; }
 
 gamepad.pad.connect(
   function(padId, x, y) {
@@ -31,8 +32,7 @@ gamepad.pad.connect(
         valTol += 1;
       }
     }
-    cmd = "echo \"hsv 0 179 " + sat + " " + satTol + " " + val + " " + valTol + " " + "\" > /run/object-sensor.in.fifo";
-    script.system(cmd);
+    script.system(setSatVal(sat, satTol, val, valTol));
   }
 )
 
@@ -49,12 +49,12 @@ function m_loop() {
         trackingControl(locs);
         locsold = locs;    
       } else {
-      //TODO: search
         print("lost");
+      //TODO: search
         if(locsold[0] > 80) {
           left.setPower(80);
           right.setPower(-80);
-        } else if(locsold[0] < 80) {
+        } else if(locsold[0] < -80) {
           left.setPower(-80);
           right.setPower(80);
         } else {
@@ -78,7 +78,7 @@ function m_loop() {
     right.setPower(-80);
     script.wait(3000);
     brick.stop();
-    timer.srop();
+    timer.stop();
     script.quit();
   }
   
@@ -191,7 +191,7 @@ var succes    = 0;
 var fixLocs   = [0,0,40];
 var m_chw     = 1;
 
-var armMax = 50;
+var armMax =  50;
 var headMax = 50;
 
 var armPos  = 30;
@@ -204,11 +204,14 @@ head.setPower(headPos);
 arm.setPower(armPos);
 script.wait(500);
 head.powerOff();
-print("init");
+
+print("init video sensor");
 brick.lineSensor("video0").init(true);
 script.wait(3000);
 print("init done");
-script.system(cmd); //set hsv
+
+script.system(setSatVal(sat, satTol, val, valTol));
+print("hsv has been set");
 
 var timer = script.timer(30);
 timer.timeout.connect(m_loop);
