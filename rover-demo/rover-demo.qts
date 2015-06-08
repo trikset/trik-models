@@ -5,10 +5,10 @@ var head  = brick.motor("E2");
 
 var stopKey   = 108;
 
-var sat    = 5;
-var satTol = 5;
-var val    = 92;
-var valTol = 8;
+var sat    = 15;
+var satTol = 15;
+var val    = 80;
+var valTol = 20;
 
 function setSatVal(sat, satTol, val, valTol) {return "echo \"hsv 0 179 " + sat + " " + satTol + " " + val + " " + valTol + " " + "\" > /run/object-sensor.in.fifo"; }
 
