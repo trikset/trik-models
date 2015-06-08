@@ -7,8 +7,8 @@ var stopKey   = 108;
 
 var sat    = 5;
 var satTol = 5;
-var val    = 97;
-var valTol = 3;
+var val    = 92;
+var valTol = 8;
 var cmd = "echo \"hsv 0 179 " + sat + " " + satTol + " " + val + " " + valTol + " " + "\" > /run/object-sensor.in.fifo";
 
 gamepad.pad.connect(
@@ -47,13 +47,14 @@ function m_loop() {
         trackingArm(locs);
         trackingHead(locs);
         trackingControl(locs);
+        locsold = locs;    
       } else {
       //TODO: search
         print("lost");
-        if(locs[0] > 80) {
+        if(locsold[0] > 80) {
           left.setPower(80);
           right.setPower(-80);
-        } else if(locs[0] < 80) {
+        } else if(locsold[0] < 80) {
           left.setPower(-80);
           right.setPower(80);
         } else {
@@ -61,8 +62,7 @@ function m_loop() {
           right.setPower(0);
         }
       }
-      
-      locsold = locs;      
+
     }
   } else {
     brick.stop();
@@ -70,7 +70,6 @@ function m_loop() {
   }
   
   if(succes) {
-
     script.system("killall object-sensor-webcam");
     script.wait(2000);
     script.system("v4l2grab -W 320 -H 240 -d /dev/video2 -o doc.jpg");
@@ -79,10 +78,11 @@ function m_loop() {
     right.setPower(-80);
     script.wait(3000);
     brick.stop();
+    timer.srop();
     script.quit();
   }
   
-  print(sat,satTol, val, valTol);
+  print(locs);
 }
 
 
@@ -214,9 +214,9 @@ var timer = script.timer(30);
 timer.timeout.connect(m_loop);
 timer.stop();
 
+print("btn: ", brick.keys().wasPressed(stopKey));
 while(!brick.keys().wasPressed(stopKey)) {
   timer.stop();
-  print(sat,satTol, val, valTol);
   script.wait(100);
 }
 
