@@ -1,6 +1,5 @@
-var stopKey = 108;
-var detectKey = 105;
-var gamepad = brick.gamepad();
+var stopKey = KeysEnum.Up;
+var detectKey = KeysEnum.Left;
 
 var BUD = brick.motor("M1");
 var LLR = brick.motor("E1");
@@ -14,10 +13,6 @@ var lost = 0;
 
 var terminate = 0;
 var next = 0
-brick.run();
-
-LLR.setPower(LLRpos);
-brick.objectSensor().init(true);
 
 var key = 0;
 function wasPressed(_key)
@@ -34,32 +29,35 @@ function wasPressed(_key)
   }
 }
 
+//start
+LLR.setPower(LLRpos);
+brick.objectSensor("video1").init(true);
 
 while(!next) {
   while(!(wasPressed(detectKey)||wasPressed(stopKey))) {
-    brick.wait(100);
+    script.wait(100);
   }
   switch(key) {
     case detectKey:
-      brick.objectSensor().detect();
+      brick.objectSensor("video1").detect();
       break;
     case stopKey:
       next = 1;
       break;
   }
-  brick.wait(1000);
+  script.wait(1000);
 }
 
 while(!terminate) {
   if(brick.keys().wasPressed(stopKey)) {
     terminate = 1;
-  } else {
-    var s = brick.objectSensor().read()[2];
+  } else {  
+    var s = brick.objectSensor("video1").read()[2];
     if(s < 5) {
       if(!lost) {
         LLRpos = 0;
         LUDpos = 0;
-        brick.wait(1000);
+        script.wait(1000);
         LLR.powerOff();
         LUD.powerOff();
         lost = 1;
@@ -69,8 +67,8 @@ while(!terminate) {
         lost = 0;
         LLR.setPower(LLRpos);
       }
-      var x = brick.objectSensor().read()[0];
-      var y = brick.objectSensor().read()[1];
+      var x = brick.objectSensor("video1").read()[0];
+      var y = brick.objectSensor("video1").read()[1];
       if(Math.abs(x) > 5) {
               if(x > LLRpos) 
                 LLRpos += 1;
@@ -89,8 +87,8 @@ while(!terminate) {
   }
 }
 
-brick.objectSensor().stop();
+brick.objectSensor("video1").stop();
 brick.stop();
 print("finish");
-brick.quit();
+script.quit();
 
