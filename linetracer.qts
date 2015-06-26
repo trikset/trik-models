@@ -1,19 +1,21 @@
-var stopKey = 108;
-var startKey = 105;
+var stopKey = KeysEnum.Up;
+var startKey = KeysEnum.Left;
 
 var left = brick.motor("M1");
-var right = brick.motor("M4");
+var right = brick.motor("M2");
 
-var p = 0.3;
+var p = 0.08;
 var i = 0.001;
-var k = 3.5;
+var k = 1.1;
 
+var xys = [0,0,0];
 var x = 0;
-var xold = 0;
-var speed = 26;
+var s = 0;
 
-brick.run();
-brick.lineSensor().init(true);
+var xold = 0;
+var speed = 30;
+
+brick.lineSensor("video0").init(true);
 
 var key = 0;
 function wasPressed(_key)
@@ -35,60 +37,64 @@ var terminate = 0;
 
 while(!next) {
   while(!(wasPressed(startKey)||wasPressed(stopKey))) {
-    brick.wait(100);
+    script.wait(100);
   }
   switch(key) {
     case startKey:
+      brick.lineSensor("video0").detect();
       next = 1;
       break;
     case stopKey:
-//      brick.stop();
+      brick.stop();
       next = 1;
       terminate = 1;
       break;
   }
-  brick.wait(1000);
+  script.wait(1000);
 }
 
 var firstTime = 1;
+
 while(!terminate) {
   if(brick.keys().wasPressed(stopKey)) {
     terminate = 1;
   } else {
-    x = brick.lineSensor().read()[0];
-    s = brick.lineSensor().read()[2];
-    print(x, " ", s);
-
+    xys = brick.lineSensor("video0").read();
+    x = xys[0]
+    s = xys[2];
    
-    if(s < 3) {
+    if(s < 12) {
       firstTime = 1;
       if(xold < 0) {
-        print("left");
+        print("left")
         left.setPower(0);                      
-        right.setPower(60);
+        right.setPower(100);
       } else {
         print("right");
-        left.setPower(60);                      
+        left.setPower(100);                      
         right.setPower(0);
       }
     } else {
-      if((s < 30) and (s > 20)) {
-        if(x < 0) {
-          print("slow left");
-          left.setPower(20);                      
-          right.setPower(30);
+      if ((s < 30) & (s > 12)) {
+        print("slow left =", s, x, yaw);
+        if(xold < 0) {
+          print("left")
+          left.setPower(0);                      
+          right.setPower(80);
         } else {
-          print("slow right");
-          left.setPower(30);                      
-          right.setPower(20);
+          print("right");
+          left.setPower(80);                      
+          right.setPower(0);
         }
       }
     
-      if (firstTime) {
-        xold = x;
-        firstTime = 0;
-      }
+    if (firstTime)
+    {
+      xold = x;
+      firstTime = 0;
+    }
       var yaw = x*p + (x - xold)*k + (x+xold)*i;
+      print(s, x, yaw);
       left.setPower(speed + yaw);
       right.setPower(speed - yaw);
       xold = x;
@@ -96,8 +102,7 @@ while(!terminate) {
   }
 }
 
-//brick.lineSensor().stop();
+brick.lineSensor("video0").stop();
 brick.stop();
 print("finish");
-//brick.quit();
-
+script.quit();

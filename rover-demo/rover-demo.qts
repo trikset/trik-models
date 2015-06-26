@@ -155,7 +155,7 @@ function trackingArm(locs)
   var speed = pp(locs[1], -100, fixLocs[1], 100);
   if (Math.abs(speed)>10) { 
     m_chw = 0;
-    armPos = pp(armPos - sign(speed), -100, 0, 100);
+    armPos = pp(armPos - sign(speed), -100, 0, 100); //!!! + or - sign()
   } else {
     speed = 0;
     m_chw = 1;
