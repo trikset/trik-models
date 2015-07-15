@@ -32,9 +32,9 @@ namespace RemoteControl
         private const int sendTimeout = 2000;
 
         /// <summary>
-        /// Struct showing connection state.
+        /// Struct, showing connection state.
         /// </summary>
-        public struct ConnectionState
+        private struct ConnectionState
         {
             public TcpClient client;
             public StreamWriter writer;
@@ -42,14 +42,16 @@ namespace RemoteControl
 
         /// <summary>
         /// Initializing connection state in Client class. 
+        /// That means, that each client class instance instantly have connection state
+        /// (empty by default). 
         /// </summary>
-        public ConnectionState connectionState = new ConnectionState();
+        private ConnectionState connectionState = new ConnectionState();
 
         /// <summary>
         /// Asynchronous connect to remote object
         /// </summary>
         /// <param name="host"> Host adress, we're connecting to </param>
-        /// <param name="port"> Port we're connecting with </param>
+        /// <param name="port"> Port, we're connecting to </param>
         public async Task Connect(string host, int port)
         {
             await ClientAwaitConnection(host, port);
@@ -61,18 +63,17 @@ namespace RemoteControl
         }
 
         /// <summary>
-        /// Task for async connect, have same parameters
+        /// Task for async connect method
         /// </summary>
-        /// <param name="host"></param>
-        /// <param name="port"></param>
+        /// <param name="host"> Host adress, we're connecting to </param>
+        /// <param name="port"> Port, we're connecting to </param>
         /// <returns></returns>
-        public Task ClientAwaitConnection(string host, int port)
+        private Task ClientAwaitConnection(string host, int port)
         {
             connectionState.client = new TcpClient();
             connectionState.client.ReceiveTimeout = connectionTimeout;
             connectionState.client.SendTimeout = sendTimeout;
-            Task connectionAwait = connectionState.client.ConnectAsync(host, port);
-            return connectionAwait;
+            return connectionState.client.ConnectAsync(host, port); 
         }
 
         /// <summary>
@@ -85,21 +86,18 @@ namespace RemoteControl
         }
 
         /// <summary>
-        /// Task for async send, have same parameters
+        /// Task for async send method
         /// </summary>
-        /// <param name="message"></param>
+        /// <param name="message"> Message, we're sending to object </param>
         /// <returns></returns>
-        public Task ClientAwaitSend(string message)
+        private Task ClientAwaitSend(string message)
         {
             if (this.connectionState.client.Connected)
             {
-                Task sendAwait = this.connectionState.writer.WriteLineAsync(message);
-                return sendAwait;
+                return this.connectionState.writer.WriteLineAsync(message);
             }
-            else
-            {
-                return new Task(() => { });
-            }         
+
+            return new Task(() => { });       
         }
 
         /// <summary>
@@ -112,7 +110,15 @@ namespace RemoteControl
                 this.connectionState.client.Close();
                 this.connectionState.writer.Dispose();
             }
-            else return;
+        }
+        
+        /// <summary>
+        /// Method, that shows connected or not tcp client to remote object.
+        /// </summary>
+        /// <returns></returns>
+        public bool IsConnected()
+        {
+            return connectionState.client.Connected;
         }
     }
 }

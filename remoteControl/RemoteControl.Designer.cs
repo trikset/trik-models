@@ -80,7 +80,7 @@
             this.buttonLeft.TabIndex = 0;
             this.buttonLeft.Text = "←";
             this.buttonLeft.UseVisualStyleBackColor = true;
-            this.buttonLeft.Click += new System.EventHandler(this.onButtonLeftClick);
+            this.buttonLeft.Click += new System.EventHandler(this.OnButtonLeftClick);
             // 
             // buttonUp
             // 
@@ -95,7 +95,7 @@
             this.buttonUp.TabIndex = 1;
             this.buttonUp.Text = "↑";
             this.buttonUp.UseVisualStyleBackColor = true;
-            this.buttonUp.Click += new System.EventHandler(this.onButtonUpClick);
+            this.buttonUp.Click += new System.EventHandler(this.OnButtonUpClick);
             // 
             // buttonRight
             // 
@@ -111,7 +111,7 @@
             this.buttonRight.TabIndex = 3;
             this.buttonRight.Text = "→";
             this.buttonRight.UseVisualStyleBackColor = true;
-            this.buttonRight.Click += new System.EventHandler(this.onButtonRightClick);
+            this.buttonRight.Click += new System.EventHandler(this.OnButtonRightClick);
             // 
             // buttonDown
             // 
@@ -126,7 +126,7 @@
             this.buttonDown.TabIndex = 2;
             this.buttonDown.Text = "↓";
             this.buttonDown.UseVisualStyleBackColor = true;
-            this.buttonDown.Click += new System.EventHandler(this.onButtonDownClick);
+            this.buttonDown.Click += new System.EventHandler(this.OnButtonDownClick);
             // 
             // buttonStop
             // 
@@ -142,7 +142,7 @@
             this.buttonStop.TabIndex = 4;
             this.buttonStop.Text = "STOP";
             this.buttonStop.UseVisualStyleBackColor = true;
-            this.buttonStop.Click += new System.EventHandler(this.onButtonStopClick);
+            this.buttonStop.Click += new System.EventHandler(this.OnButtonStopClick);
             // 
             // connectButton
             // 
@@ -158,7 +158,7 @@
             this.connectButton.TabIndex = 5;
             this.connectButton.Text = "Connect";
             this.connectButton.UseVisualStyleBackColor = true;
-            this.connectButton.Click += new System.EventHandler(this.onConnectButtonClick);
+            this.connectButton.Click += new System.EventHandler(this.OnConnectButtonClick);
             // 
             // IpAdress
             // 
