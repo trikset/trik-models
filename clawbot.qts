@@ -1,0 +1,93 @@
+var powerMotorLeft  = brick.motor("M2");
+var powerMotorRight = brick.motor("M1");
+var motorHandUpDown = brick.motor("M3");
+var handServo       = brick.motor("M4");
+var lightL = brick.sensor(A1);
+var lightR = brick.sensor(A2);
+var distance = brick.sensor(D1);
+
+var stopBack    = false;
+var stopForward = false;
+var Gy = 0;
+
+gamepad.pad.connect(
+  function(padId, x, y) {
+    if (padId == 1) {
+      motorHandUpDown.setPower(-y)/10;
+      handServo.setPower(x)/10;
+    }
+
+    if (padId == 2) {
+      Gy = y;
+      if(stopBack) {
+      	Gy = Gy > 0 ? Gy : 0;
+      }
+      if(stopForward) {
+      	Gy = Gy < 0 ? Gy : 0;
+      }
+      powerMotorLeft.setPower(Gy+x);
+      powerMotorRight.setPower(Gy-x);
+    }
+  }
+)
+
+gamepad.padUp.connect(
+  function(padId, x, y) {
+    if (padId == 1) {
+      motorHandUpDown.powerOff();
+      handServo.powerOff();
+    } else if (padId == 2) {
+      powerMotorLeft.powerOff();
+      powerMotorRight.powerOff();
+    }
+  }
+)
+
+gamepad.button.connect(
+  function(buttonId, pressed) {
+    switch (buttonId) {
+      case 1: {
+        brick.say("Hello, i am TRIK");
+        break;
+      }
+      case 2: {
+        brick.sadSmile();
+        script.wait(2000);
+        brick.smile();
+        break;
+      }
+      default: break;
+    }
+  }
+)
+
+var dold = 0;
+var bordersLoop = function() {
+  if(lightL.read() > 6 || lightR.read() > 6) {
+    stopBack = true;
+    if(Gy < 0) {
+      powerMotorLeft.powerOff();
+      powerMotorRight.powerOff();
+    }
+  } else {
+    stopBack = false;
+  }
+  var d = distance.read()
+  if((d + dold) / 2 < 30) {
+    stopForward = true;
+    if(Gy > 0) {
+      powerMotorLeft.powerOff();
+      powerMotorRight.powerOff();
+    }
+  } else {
+    stopForward = false;
+  }
+  print(lightL.read(), lightR.read(), (d + dold) / 2);
+  dold = d;
+}
+
+var timer = script.timer(100);
+timer.timeout.connect(bordersLoop); 
+timer.start();
+
+script.run();
