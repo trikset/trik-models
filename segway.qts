@@ -1,0 +1,118 @@
+var l = brick.motor(M3);
+var r = brick.motor(M4);
+var gyr = brick.gyroscope();
+var acc = brick.accelerometer();
+
+//consts
+var c_fb = 12.7; //full battery value
+var c_p2d = 0.0175; //parrots to degree
+var c_itnum = 100; //number of iterations for gyro drift calculations
+var c_minpower = 5; //min power
+var c_mainperiod = 1; //ms 
+
+//PIDc
+var c_ck = 0.0044;
+var c_pk = 10;
+var c_ik = 2;
+var c_dk = 10;
+
+//axes
+var c_accG = 0; // gravity vector codirectional axis
+var c_accD = 2; // parallel to the horizont "different" axis
+var c_gyr  = 0; // parallel to the horizont gyro axis
+
+//global values
+var g_bc = 1; //battery coefficient
+var g_gd = 0;
+var g_od = 0;  //out data (gyro accel fusion)
+var g_angle2 = 0;
+var g_angle3 = 0;
+var g_offset = 0;
+var g_te = Date.now();;
+
+function sgn(x) { return x > 0 ? 1 : (x < 0 ? -1 : 0); }
+function abs(x) { return x > 0 ? x : -x; }
+function sat(a, b) { return abs(a) > b ? sgn(a) * b : a; }
+
+function setBatteryTimer() {
+  function batteryLoop() {
+    g_bc = c_fb / brick.battery().readVoltage();
+  };
+
+  var batteryTimer = script.timer(500);  
+  batteryTimer.timeout.connect(batteryLoop);
+  batteryTimer.start();
+}
+
+function setKeys() {
+  brick.keys().buttonPressed.connect(
+    function(code, value) {
+      if (code == KeysEnum.Up && value == 0) {
+        print("exit");
+        brick.stop();
+        script.quit();
+      }
+      if (code == KeysEnum.Down && value == 2) {
+        print("calibrate");
+        g_offset = g_od;
+      }
+    }
+  );
+}
+
+function calibrateGyrDrift() {
+  print("Gyro drift calculating...");
+  var gd = 0;
+  for(var i = 0; i < c_itnum; i++) {
+    gd += gyr.read()[c_gyr];
+    script.wait(50);
+  }
+  g_gd = gd / c_itnum;
+  print("Gyro drift is:", g_gd);
+}
+
+var g_cnt = 0;
+function startBalancing() {
+  function balanceLoop() {
+    var accfd = acc.read(); //accel full data
+    var accd = -Math.atan2(accfd[c_accD], -accfd[c_accG]) * 180.0/3.14159;
+
+    var tmp = Date.now() - g_te;
+    var gyrd = (gyr.read()[c_gyr] - g_gd)*tmp*c_p2d/1000.0; //ms to s
+    g_te = Date.now();
+
+    g_od = (1 - c_ck)*(g_od + gyrd) + c_ck*accd;
+    var angle = g_od - g_offset;
+
+    var yaw = g_bc*(sgn(angle)*c_minpower + angle*c_pk + (angle - g_angle2)*c_dk + (angle + g_angle2 + g_angle3)*c_ik);
+    g_angle3 = g_angle2;
+    g_angle2 = angle; 
+
+//    print(yaw);
+    if (abs(angle) < 45) {
+      l.setPower(yaw);
+      r.setPower(yaw);
+    } else {
+      l.powerOff(0);
+      r.powerOff(0);
+    }
+    
+    if(g_cnt == 20) {
+      print(yaw, angle, tmp);
+      g_cnt = 0;
+    }
+    g_cnt += 1;
+  };
+  
+  var balanceTimer = script.timer(c_mainperiod);
+  balanceTimer.timeout.connect(balanceLoop);
+  balanceTimer.start();
+  print("balancing started");
+}
+
+setBatteryTimer();
+setKeys();
+calibrateGyrDrift();
+startBalancing();
+
+script.run();
