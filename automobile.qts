@@ -1,42 +1,61 @@
-var left  = brick.motor("M1");
-var right = brick.motor("M2");
-var rule  = brick.motor("E1");
+var pillow = brick.motor("C1");
+var basem  = brick.motor("C2"); //ходовой
+var rule   = brick.motor("E1");
+var speedm = brick.motor("C2"); //реле
 
-gamepad.pad.connect(
-  function(padId, x, y) {
-    if (padId == 1) {
-      print("rule",x);
-      rule.setPower(x);
-    }
+var dl = brick.encoder("D1");
+var dr = brick.encoder("D1");
+var av = brick.encoder("A1");
 
-    if (padId == 2) {
-      print("lr",y);
-      left.setPower(y);
-      right.setPower(y);
-    }
-  }
-)
 
-gamepad.padUp.connect(
-  function(padId, x, y) {
-    if (padId == 1) {
-      timer.start();
-    } else if (padId == 2) {
-      left.powerOff();
-      right.powerOff();
-    }
-  }
-)
+pillow.setPower(-100);
+basem.setPower(-100);
 
-function m_loop() {
-  print("stop rule");
-  rule.powerOff();
-  timer.stop();
+pillow.setPower(30);
+basem.setPower(30);
+
+//аварийно сдаем назад
+function goBack() {
+    basem.setPower(-100);
+    script.wait(200);
+    speedm.setPower(100);
+    basem.setPower(30);
+    script.wait(5000);
+    basem.setPower(-100);
+    script.wait(200);
+    speedm.setPower(0);
+    rule.setPower(80);
+    basem.setPower(30);
+    script.wait(2000);
+    rule.setPower(0);
 }
 
-print("start");
-var timer = script.timer(5000);
-timer.timeout.connect(m_loop);
-timer.stop();
+//var errState = false;
+//main loop
+while (true) {
+  var avd = av.read();
+  if(avd > 60) { //аварийная остановка, врезались в стенку
+    goBack();
+  }
+  
+  var dld = dl.read();
+  var drd = dr.read();
+  
+  if(dld > 100 && drd > 100) {
+    //kepp going forward
+  } else {
+    if(dld + drd < 105) {
+      //горлышко
+      goBack();
+    } else { //иначе рулим
+      if(dld < 80) {
+        rule.setPower(80);
+      }
+      if(drd < 80) {
+        rule.setPower(-80);
+      }
+    }
+  }
+}
 
 script.run();

@@ -1,7 +1,7 @@
-var powerMotorArm = brick.motor("M1");
-var servoYaw = brick.motor("E1");
-var powerMotorRight = brick.motor("M3");
-var powerMotorLeft = brick.motor("M4");
+var powerMotorArm = brick.motor(M1);
+var servoYaw = brick.motor(Ы1);
+var powerMotorRight = brick.motor(M3);
+var powerMotorLeft = brick.motor(M4);
 
 gamepad.pad.connect(
 	function(padId, x, y) {
