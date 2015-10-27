@@ -8,7 +8,7 @@ var c_fb = 12.7; //full battery value
 var c_p2d = 0.0175; //parrots to degree
 var c_itnum = 100; //number of iterations for gyro drift calculations
 var c_minpower = 5; //min power
-var c_mainperiod = 1; //ms 
+var c_mainperiod = 5; //ms 
 
 //PIDc
 var c_ck = 0.0044;
