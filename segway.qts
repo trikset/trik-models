@@ -8,13 +8,13 @@ var c_fb = 12.7; //full battery value
 var c_p2d = 0.0175; //parrots to degree
 var c_itnum = 100; //number of iterations for gyro drift calculations
 var c_minpower = 5; //min power
-var c_mainperiod = 5; //ms 
+var c_mainperiod = 20; //ms 
 
 //PIDc
 var c_ck = 0.0044;
-var c_pk = 10;
-var c_ik = 2;
-var c_dk = 10;
+var c_pk = 12;
+var c_ik = 1;
+var c_dk = 12;
 
 //axes
 var c_accG = 0; // gravity vector codirectional axis
@@ -52,13 +52,21 @@ function setKeys() {
         brick.stop();
         script.quit();
       }
-      if (code == KeysEnum.Down && value == 2) {
+      if (code == KeysEnum.Down && (value == 1 || value == 2)) {
         print("calibrate");
         g_offset = g_od;
       }
     }
   );
 }
+
+function initSensors() {
+  script.system("echo 0 >  /sys/class/misc/mma845x/state");
+  script.system("echo 1 >  /sys/class/misc/mma845x/state");
+  script.system("echo 0 >  /sys/class/misc/l3g42xxd/state");
+  script.system("echo 1 >  /sys/class/misc/l3g42xxd/state");
+}
+
 
 function calibrateGyrDrift() {
   print("Gyro drift calculating...");
@@ -96,7 +104,10 @@ function startBalancing() {
       l.powerOff(0);
       r.powerOff(0);
     }
-    
+/*    
+    script.system("echo 0 >  /sys/class/misc/mma845x/state");
+    script.system("echo 1 >  /sys/class/misc/mma845x/state");
+*/
     if(g_cnt == 20) {
       print(yaw, angle, tmp);
       g_cnt = 0;
@@ -110,6 +121,7 @@ function startBalancing() {
   print("balancing started");
 }
 
+initSensors();
 setBatteryTimer();
 setKeys();
 calibrateGyrDrift();
