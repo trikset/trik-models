@@ -20,10 +20,10 @@ gamepad.pad.connect(
       }
       /*
       udStep   = Math.abs(y) > 30 ? sign(-y) : 0;
-      handStep = Math.abs(x) > 20 ? sign(-x)  : 0;
+      handStep =  ? sign(-x)  : 0;
       */
-      udStep   = -y / 30;
-      handStep = -x / 30;
+      udStep   = (Math.abs(y) > 30) ? (-y / 30) : 0;
+      handStep = (Math.abs(x) > 20) ? (-x / 30) : 0;
     }
 
     if (padId == 2) {
