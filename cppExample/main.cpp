@@ -1,4 +1,4 @@
-/* Copyright 2014 CyberTech Labs Ltd.
+/* Copyright 2014-2016 CyberTech Labs Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,24 +13,26 @@
  * limitations under the License. */
 
 #include <QtCore/QCoreApplication>
+#include <QtCore/QScopedPointer>
 #include <QtCore/QTimer>
 
-#include <trikControl/brick.h>
+#include <trikControl/brickInterface.h>
+#include <trikControl/brickFactory.h>
 
 #include "gyroscope.h"
 
 int main(int argc, char* argv[])
 {
 	QCoreApplication app(argc, argv);
-	trikControl::Brick brick(*QCoreApplication::instance()->thread(), ".", ".");
+	QScopedPointer<trikControl::BrickInterface> brick(trikControl::BrickFactory::create(".", "."));
 
-	cppExample::Gyroscope gyroscope(brick);
+	cppExample::Gyroscope gyroscope(*brick);
 	QTimer timer;
 	timer.setInterval(100);
 	timer.setSingleShot(false);
 
 	QObject::connect(&timer, SIGNAL(timeout()), &gyroscope, SLOT(showGyroscopeReading()));
-	QObject::connect(brick.keys(), SIGNAL(buttonPressed(int,int)), QCoreApplication::instance(), SLOT(quit()));
+	QObject::connect(brick->keys(), SIGNAL(buttonPressed(int,int)), QCoreApplication::instance(), SLOT(quit()));
 
 	timer.start();
 

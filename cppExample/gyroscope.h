@@ -1,4 +1,4 @@
-/* Copyright 2014 CyberTech Labs Ltd.
+/* Copyright 2014-2016 CyberTech Labs Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 
 #include <QtCore/QObject>
 
-#include <trikControl/brick.h>
+#include <trikControl/brickInterface.h>
 
 namespace cppExample {
 
@@ -22,7 +22,7 @@ class Gyroscope : public QObject
 {
 	Q_OBJECT
 public:
-	Gyroscope(trikControl::Brick &brick)
+	Gyroscope(trikControl::BrickInterface &brick)
 		: mBrick(brick)
 	{
 	}
@@ -35,7 +35,7 @@ public slots:
 	}
 
 private:
-	trikControl::Brick &mBrick;
+	trikControl::BrickInterface &mBrick;
 };
 
 }

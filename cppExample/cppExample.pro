@@ -1,4 +1,4 @@
-# Copyright 2014 CyberTech Labs Ltd.
+# Copyright 2014-2016 CyberTech Labs Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ QT -= gui
 INCLUDEPATH += \
 	$$TRIKRUNTIME_SOURCES_PATH/trikControl/include/ \
 
-LIBS += -L$$TRIKRUNTIME_PATH -ltrikControl -ltrikKernel
+LIBS += -L$$TRIKRUNTIME_PATH -ltrikControl -ltrikKernel -lqslog -ltrikHal
 
 QMAKE_LFLAGS += -Wl,-O1,-rpath,.
 
