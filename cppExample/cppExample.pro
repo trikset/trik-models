@@ -18,8 +18,6 @@ TRIKRUNTIME_PATH = $$TRIKRUNTIME_SOURCES_PATH/bin/arm-release
 TEMPLATE = app
 CONFIG += console
 
-QT -= gui
-
 INCLUDEPATH += \
 	$$TRIKRUNTIME_SOURCES_PATH/trikControl/include/ \
 

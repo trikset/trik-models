@@ -12,7 +12,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License. */
 
-#include <QtCore/QCoreApplication>
+#include <QtCore/qglobal.h>
+
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+	#include <QtGui/QApplication>
+#else
+	#include <QtWidgets/QApplication>
+#endif
+
 #include <QtCore/QScopedPointer>
 #include <QtCore/QTimer>
 
@@ -23,7 +30,7 @@
 
 int main(int argc, char* argv[])
 {
-	QCoreApplication app(argc, argv);
+	QApplication app(argc, argv);
 	QScopedPointer<trikControl::BrickInterface> brick(trikControl::BrickFactory::create(".", "."));
 
 	cppExample::Gyroscope gyroscope(*brick);
