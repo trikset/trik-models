@@ -1,7 +1,40 @@
-var powerMotorArm = brick.motor(M1);
-var servoYaw = brick.motor(Ы1);
-var powerMotorRight = brick.motor(M3);
-var powerMotorLeft = brick.motor(M4);
+var UD = brick.motor(M1);
+var SQ = brick.motor(S1);
+var R = brick.motor(M2);
+var L = brick.motor(M3);
+
+brick.eventDevice.on.connect(
+	function(event_, code_, value_, eventTime_) {
+    var yaw = 0;
+    var spd = 0;
+    switch(code_) {
+      case PadEventCodes.X:
+        yaw = value_*100/128;
+        break;
+      case PadEventCodes.Y:
+        spd = -1*value_*100/128;
+        break;
+      default:
+        print("pew");
+    }
+  }
+)
+gamepad.pad.connect(
+	function(padId, x, y) {
+		if (padId == 2) {
+			powerMotorArm.setPower(-y);
+			servoYaw.setPower(-x);
+		}
+
+		if (padId == 1) {
+			powerMotorLeft.setPower(y + x);
+			powerMotorRight.setPower(-(-y + x));
+		}
+	}
+)
+
+
+
 
 gamepad.pad.connect(
 	function(padId, x, y) {
@@ -11,8 +44,8 @@ gamepad.pad.connect(
 		}
 
 		if (padId == 1) {
-			powerMotorLeft.setPower(y - x);
-			powerMotorRight.setPower(-(y + x));
+			powerMotorLeft.setPower(y + x);
+			powerMotorRight.setPower(-(-y + x));
 		}
 	}
 )

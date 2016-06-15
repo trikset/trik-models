@@ -1,5 +1,5 @@
-var R  = brick.motor(M3); 
-var L  = brick.motor(M4);
+var R  = brick.motor(M4); 
+var L  = brick.motor(M3);
 var UD = brick.motor(M1); // Up/Down
 var SQ = brick.motor(S1); // Squeeze
 var cam = brick.objectSensor("video1"); //Ball sensor
@@ -11,16 +11,16 @@ var locs    = [0,0,0];
 var locsOld = [0,0,0];
 var locsTgt = [0,53,38];
 
-var xPK = 0.5;
+var xPK = 0.7;
 var xIK = 0;//.005;
-var xDK = 0;//.25;
+var xDK = 0.2;//.25;
 
 var paused = true;
 
-var chasisMinSpeedC = 15;
+var chasisMinSpeedC = 10;
 var chasisMinSpeed = chasisMinSpeedC;
 var chasisCoeff = 0.11;
-var armMinSpeed = 35;
+var armMinSpeed = 30;
 
 var squeeze = function() {
   print("done!")
@@ -139,7 +139,7 @@ var trackingLoop = function() {
 
     var chasisSpeed     = pp(locs[2], 0,    locsTgt[2], 100); // back/forward based on ball size
     var chasisBackSpeed = pp(locs[1], -100, locsTgt[1], 100); // move back/forward if ball leaves range
-    var chasisFinalSpeed = chasisSpeed + chasisBackSpeed;
+    var chasisFinalSpeed = 1.5*chasisSpeed + chasisBackSpeed;
 
     var armSpeed = pp(locs[1], -100, locsTgt[1], 100);
 
