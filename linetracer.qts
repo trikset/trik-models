@@ -1,21 +1,21 @@
 var stopKey = KeysEnum.Up;
 var startKey = KeysEnum.Left;
 
-var left = brick.motor("M1");
-var right = brick.motor("M2");
+var left = brick.motor(M3);
+var right = brick.motor(M4);
 
-var p = 0.08;
+var p = 0.4;
 var i = 0.001;
-var k = 1.1;
+var k = 0.1;
 
 var xys = [0,0,0];
 var x = 0;
 var s = 0;
 
 var xold = 0;
-var speed = 30;
+var speed = 50;
 
-brick.lineSensor("video0").init(true);
+brick.lineSensor("video1").init(true);
 
 var key = 0;
 function wasPressed(_key)
@@ -41,7 +41,7 @@ while(!next) {
   }
   switch(key) {
     case startKey:
-      brick.lineSensor("video0").detect();
+      brick.lineSensor("video1").detect();
       next = 1;
       break;
     case stopKey:
@@ -59,7 +59,7 @@ while(!terminate) {
   if(brick.keys().wasPressed(stopKey)) {
     terminate = 1;
   } else {
-    xys = brick.lineSensor("video0").read();
+    xys = brick.lineSensor("video1").read();
     x = xys[0]
     s = xys[2];
    
@@ -67,42 +67,29 @@ while(!terminate) {
       firstTime = 1;
       if(xold < 0) {
         print("left")
-        left.setPower(0);                      
-        right.setPower(100);
+        left.setPower(-80);                      
+        right.setPower(0);
       } else {
         print("right");
-        left.setPower(100);                      
-        right.setPower(0);
+        left.setPower(0);                      
+        right.setPower(-80);
       }
     } else {
-      if ((s < 30) & (s > 12)) {
-        print("slow left =", s, x, yaw);
-        if(xold < 0) {
-          print("left")
-          left.setPower(0);                      
-          right.setPower(80);
-        } else {
-          print("right");
-          left.setPower(80);                      
-          right.setPower(0);
-        }
+      if (firstTime) {
+        xold = x;
+        firstTime = 0;
       }
-    
-    if (firstTime)
-    {
-      xold = x;
-      firstTime = 0;
-    }
+
       var yaw = x*p + (x - xold)*k + (x+xold)*i;
       print(s, x, yaw);
-      left.setPower(speed + yaw);
-      right.setPower(speed - yaw);
+      left.setPower(-(speed - yaw));
+      right.setPower(-(speed + yaw));
       xold = x;
     }
   }
 }
 
-brick.lineSensor("video0").stop();
+brick.lineSensor("video1").stop();
 brick.stop();
 print("finish");
 script.quit();

@@ -1,7 +1,7 @@
-var powerMotorLeft  = brick.motor("M2");
-var powerMotorRight = brick.motor("M1");
-var motorHandUpDown = brick.motor("M3");
-var handServo       = brick.motor("M4");
+var powerMotorLeft  = brick.motor(M2);
+var powerMotorRight = brick.motor(M1);
+var motorHandUpDown = brick.motor(M4);
+var handServo       = brick.motor(M3);
 var lightL = brick.sensor(A1);
 var lightR = brick.sensor(A2);
 var distance = brick.sensor(D1);
@@ -56,6 +56,11 @@ gamepad.button.connect(
         brick.smile();
         break;
       }
+      case 5: {
+        script.system("/etc/init.d/mjpg-encoder-ov7670 restart");
+        script.wait(3000);
+        script.system("/etc/init.d/mjpg-streamer-ov7670.sh restart");
+      }
       default: break;
     }
   }
@@ -90,4 +95,7 @@ var timer = script.timer(100);
 timer.timeout.connect(bordersLoop); 
 timer.start();
 
+script.system("/etc/init.d/mjpg-encoder-ov7670 restart");
+script.wait(3000);
+script.system("/etc/init.d/mjpg-streamer-ov7670.sh restart");
 script.run();
