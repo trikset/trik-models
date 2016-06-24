@@ -112,6 +112,9 @@ function handle_button_down(buttonId) {
       //brick.system("espeak -v russian_test -s 100 \"Hello, i am TRIK\"");
       brick.say("Hello, I am TRIK");
       break;
+    case 4:
+      brick.playTone(400, 1000);
+      break;
   }
 }
 
