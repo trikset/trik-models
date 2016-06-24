@@ -113,7 +113,9 @@ function handle_button_down(buttonId) {
       brick.say("Hello, I am TRIK");
       break;
     case 4:
-      brick.playTone(400, 1000);
+      if (typeof brick.playTone === 'function') {
+        brick.playTone(400, 1000);
+      }
       break;
   }
 }
