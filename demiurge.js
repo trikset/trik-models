@@ -2,8 +2,8 @@ var powerMotorLeft  = brick.motor(M1);
 var powerMotorRight = brick.motor(M2);
 
 var scriptLines =
-	"#put all new lines here\n" 
-	+ "sleep 20\n"
+	"#put all script lines here\n"
+  + "sleep 20\n"
 
 var scriptToKill = "autorun." + new Date().getTime() + ".sh"
 var scriptFileName = "/tmp/" + scriptToKill
