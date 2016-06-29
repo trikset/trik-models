@@ -1,4 +1,11 @@
-//lightsaber
+/*
+ * Apache License
+ * Version 2.0, January 2004
+ * http://www.apache.org/licenses/
+ *
+ * Lightsaber
+*/
+
 var r = brick.motor(M3).setPower;
 var g = brick.motor(M1).setPower;
 var b = brick.motor(M4).setPower;
