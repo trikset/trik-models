@@ -53,7 +53,7 @@ gyr.newData.connect(
 )
 
 var sat = function (a) {
-  var max = 70
+  var max = 170
   if (a > max)
     return max;
   else
@@ -64,25 +64,31 @@ var wewLoop = function() {
   var freq_new = sat((Math.abs(gdata[0]) + Math.abs(gdata[1]) + Math.abs(gdata[2])) >> 9);
   print(freq_new);
 
-  if(freq_new < 20) {
+  if(freq_new < 40) {
     if(freq)
-      play(20, 10);
+      play(20, 5000);
     freq = 0;
+    d(0);
   }
   else if(freq != freq_new) {
+    d(100);
+    r(sat(gdata[0]>>9));
+    g(sat(gdata[1]>>9));
+    b(sat(gdata[2]>>9));
     freq = freq_new;
-    brick.playTone(BASE+freq, 2000);
+    play(BASE+freq, 2000);
   }
 }
 
 var main = function() {
-  d(-100); //wisely the pin you should choose
+  d(100); //wisely the pin you should choose
   
   r(100);
-  g(-100);
+  g(100);
   b(100);
   script.system("echo 0 > /sys/class/misc/l3g42xxd/odr_selection");
-  
+  script.system("echo 0 > /sys/class/misc/l3g42xxd/fs_selection"); 
+  script.system("rmmod mma845x");
   var mainT = script.timer(100);
   mainT.timeout.connect(wewLoop);
   mainT.stop();
