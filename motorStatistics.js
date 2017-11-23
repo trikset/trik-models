@@ -41,13 +41,14 @@ var updateDisplay = function() {
 	var rotationTimeMs = Date.now() - rotationStartTime;
 
 	var display = brick.display();
-
-	display.addLabel("Elapsed (sec): " + round(rotationTimeMs / 1000, 1), 10, pixelPerString * 1);
-	display.addLabel("Motor / CPR / Rounds", 10, pixelPerString * 2);
+	var elapsedSec = round(rotationTimeMs / 1000, 1);
+	display.addLabel("Elapsed (sec): " + elapsedSec, 10, pixelPerString * 1);
+	display.addLabel("Motor / CPR / RPM", 10, pixelPerString * 2);
 
 	for (var i = 1; i <= 4; i++) {
 		var infoString = "M" + i + " / " + cpr[i - 1] + " / " + revs[i - 1];
-		display.addLabel(infoString, 10, pixelPerString * (i + 2));	
+		display.addLabel(infoString, 10, pixelPerString * (i + 2));
+		print(elapsedSec + " | " + infoString);
 	};
 
 	display.redraw();
