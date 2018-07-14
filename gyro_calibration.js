@@ -1,7 +1,7 @@
 var gyro = brick.gyroscope()
 var calibrationDelay = 60000
 
-gyro.biasInited.connect(function () {
+gyro.calibrationFinished.connect(function () {
 	calibValues = gyro.getCalibrationValues()
 	print("Calibration values: " + calibValues)
 
