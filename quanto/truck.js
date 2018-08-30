@@ -111,16 +111,16 @@ var waitOrBreak = function(x) {
 
 var startAutonomous = function() {
 	slightTurnLeft(5)
-	& waitOrBreak(2)
-	& slightTurnLeft(45)
-	& waitOrBreak(2)
-	& slightTurnRight(85)
-	& waitOrBreak(2)
-	& slightTurnRight(45)
-	& upload()
-	& waitOrBreak(2)
-	& load()
-	& waitOrBreak(2);
+	&& waitOrBreak(2)
+	&& slightTurnLeft(45)
+	&& waitOrBreak(2)
+	&& slightTurnRight(85)
+	&& waitOrBreak(2)
+	&& slightTurnRight(45)
+	&& upload()
+	&& waitOrBreak(2)
+	&& load()
+	&& waitOrBreak(2);
 }
 
 

@@ -177,7 +177,7 @@ gyro.newData.connect(
 
 var waitOrBreak = function(x) {
 	for (var i = 0; i < x; i++) {
-		if (!wasActivity & !wasMotion) {
+		if (!wasActivity && !wasMotion) {
 			script.wait(1000);		
 		} else {
 			return false;
@@ -188,16 +188,16 @@ var waitOrBreak = function(x) {
 
 var blinkStart = function() {
 		d(100)
-		& r(100)
-		& waitOrBreak(1)
-		& r(0)
-		& g(100)
-		& waitOrBreak(1)
-		& g(0)
-		& b(100)
-		& waitOrBreak(1)
-		& b(0)
-		& d(0);
+		&& r(100)
+		&& waitOrBreak(1)
+		&& r(0)
+		&& g(100)
+		&& waitOrBreak(1)
+		&& g(0)
+		&& b(100)
+		&& waitOrBreak(1)
+		&& b(0)
+		&& d(0);
 }
 
 var wewLoop = function() {

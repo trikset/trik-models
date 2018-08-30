@@ -143,20 +143,20 @@ var waitOrBreak = function(x) {
 
 var startAutonomous = function() {
 	rotate(-1)
-	& waitOrBreak(3)
-	& stopMotionMotors()
-	& waitOrBreak(5)
-	& controlFork(100)
-	& waitOrBreak(3)
-	& stopForkMotors()
-	& waitOrBreak(3)
-	& controlFork(0, -100)
-	& waitOrBreak(3)
-	& stopForkMotors()
-	& waitOrBreak(3)
-	& rotate(1)
-	& waitOrBreak(3)
-	& stopMotionMotors();
+	&& waitOrBreak(3)
+	&& stopMotionMotors()
+	&& waitOrBreak(5)
+	&& controlFork(100)
+	&& waitOrBreak(3)
+	&& stopForkMotors()
+	&& waitOrBreak(3)
+	&& controlFork(0, -100)
+	&& waitOrBreak(3)
+	&& stopForkMotors()
+	&& waitOrBreak(3)
+	&& rotate(1)
+	&& waitOrBreak(3)
+	&& stopMotionMotors();
 }
 
 var updateControlMode = function() {
