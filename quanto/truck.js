@@ -137,7 +137,7 @@ var updateControlMode = function() {
 }
 
 
-var script = controlModeTimer.timer(10000);
+var controlModeTimer = script.timer(10000);
 controlModeTimer.timeout.connect(updateControlMode);
 controlModeTimer.start();
 

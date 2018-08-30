@@ -170,25 +170,38 @@ var waitOrBreak = function(x) {
 }
 
 var startAutonomous = function() {
-	rotate(-1)
-	& waitOrBreak(3)
-	& stopMotionMotors()
-	& waitOrBreak(5)
+	put()
+	& waitOrBreak(2)
 	& take()
 	& waitOrBreak(2)
 	& controlClaw(0, 100)
 	& waitOrBreak(3)
 	& stopClawMotors()
-	& waitOrBreak(3)
-	& put()
+	& waitOrBreak(2)
+	& rotate(1)
+	& waitOrBreak(2)
+	& stopMotionMotors()
 	& waitOrBreak(2)
 	& controlClaw(0, -100)
 	& waitOrBreak(3)
 	& stopClawMotors()
+	& waitOrBreak(2)
+	& put()
+	& waitOrBreak(2)
+	& take()
+	& waitOrBreak(2)
+	& controlClaw(0, 100)
 	& waitOrBreak(3)
-	& rotate(1)
+	& stopClawMotors()
+	& waitOrBreak(2)
+	& rotate(-1)
+	& waitOrBreak(2)
+	& stopMotionMotors()
+	& waitOrBreak(2)
+	& controlClaw(0, -100)
 	& waitOrBreak(3)
-	& stopMotionMotors();
+	& stopClawMotors()
+	& put();
 }
 
 var updateControlMode = function() {
