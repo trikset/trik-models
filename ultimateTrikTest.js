@@ -61,18 +61,17 @@ var main = function()
 	brick.display().clear();
 	brick.display().redraw();
 	
-	brick.motor(S1).setPower(50);
-	brick.motor(S2).setPower(50);
-	brick.motor(S3).setPower(50);
-	brick.motor(S4).setPower(50);
-	brick.motor(S5).setPower(50);
-	brick.motor(S6).setPower(50);
+	for (var i = 1; i <= 6; i++) {
+		brick.motor('S' + i).setPower(100);
+	}
+	for (var i = 1; i <= 4; i++) {
+		brick.motor('M' + i).setPower(100);
+	}
 
 	///Motors encoders
 	var MOTORS_TIMER = 2000;
 	
 	//E1 M1 test
-	brick.motor(M1).setPower(100);
 	var prevE1Value = 0;
 	var e1Timer = script.timer(MOTORS_TIMER);
 	e1Timer.timeout.connect(function () {
@@ -80,7 +79,6 @@ var main = function()
 	});
 	
 	//E2 M2 test
-	brick.motor(M2).setPower(100);
 	var prevE2Value = 0;
 	var e2Timer = script.timer(MOTORS_TIMER);
 	e2Timer.timeout.connect(function () {
@@ -88,7 +86,6 @@ var main = function()
 	});
 	
 	//E3 M3 test
-	brick.motor(M3).setPower(100);
 	var prevE3Value = 0;
 	var e3Timer = script.timer(MOTORS_TIMER);
 	e3Timer.timeout.connect(function () {
@@ -96,7 +93,6 @@ var main = function()
 	});
 	
 	//E4 M4 test
-	brick.motor(M4).setPower(100);
 	var prevE4Value = 0;
 	var e4Timer = script.timer(MOTORS_TIMER);
 	e4Timer.timeout.connect(function () {
@@ -193,7 +189,7 @@ var main = function()
 	
 	
 	
-	//Main draw-clear function
+	//Main draw-clear function + camera test
 	var page = 0;
 	var mainMenuItems = ['1. Camera test', '2. Auto tested options'];
 	var pos = 1;
