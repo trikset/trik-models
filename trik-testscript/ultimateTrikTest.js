@@ -4,13 +4,19 @@ var SYMBOL_WIDTH = 10;
 var SYMBOL_HEIGHT = 20;
 var SCREEN_WIDTH = 240;
 var SCREEN_HEIGHT = 279;
+var CAMERA_CHECK_VALUE = 371;
 var SENSOR_CHECK_COUNTER = 2; // check every 1 sec, so for 2 checks you need to waitStatusText at least 3 sec
 var waitStatusText = "...";
 var errorStatusText = "errorStatusTextOR";
 var successStatusText = "gud";
+include("artagTest.js"); ///////////////// tmp path /home/root/trik/scripts/
 
-var testsMap = {"E1": waitStatusText, "E2": waitStatusText, "E3": waitStatusText, "E4": waitStatusText, "Gyro": waitStatusText, "Accel": waitStatusText, 
-	"D1": waitStatusText, "D2": waitStatusText, "A1": waitStatusText, "A2": waitStatusText, "A3": waitStatusText, "A4": waitStatusText, "A5": waitStatusText, "A6": waitStatusText};
+
+var testsMap = {"E1": waitStatusText, "E2": waitStatusText, "E3": waitStatusText, "E4": waitStatusText, 
+	"Gyro": waitStatusText, "Accel": waitStatusText, "D1": waitStatusText, "D2": waitStatusText, "A1": waitStatusText,
+	"A2": waitStatusText, "A3": waitStatusText, "A4": waitStatusText, "A5": waitStatusText, "A6": waitStatusText,
+	"Camera": waitStatusText, "Esc": waitStatusText, "Enter": waitStatusText, "Up": waitStatusText, 
+	"Down": waitStatusText, "Left": waitStatusText, "Right": waitStatusText};
 
 var printCenter = function (text, y) {
 	brick.display().addLabel(text, (SCREEN_WIDTH - text.length * SYMBOL_WIDTH)/2, y);
@@ -186,216 +192,60 @@ var main = function()
 	a6Timer.timeout.connect(function () {
 		a6Counter = sensorTest(A6, a6Timer, a6Counter, ASensorBenchmark, ASensorRange);
 	});
-	
-	
+		
+	var CAMERA_TIMER = 1000;
+	var artagValue;
+	var cameraTimer = script.timer(CAMERA_TIMER);
+	cameraTimer.timeout.connect(function () {
+		artagValue = artagTest();
+		if (artagValue == CAMERA_CHECK_VALUE) {
+			testsMap["Camera"] = successStatusText;
+		}
+		else {
+			testsMap["Camera"] = artagValue;
+			cameraTimer.start();
+		}
+	});
 	
 	//Main draw-clear function + camera test
 	var page = 0;
-	var mainMenuItems = ['1. Camera test', '2. Auto tested options'];
 	var pos = 1;
 	while (true) {
-		switch (page) {
-		case 0:
 			var wordStartX = 1;
 			var wordStartY = 1 * SYMBOL_HEIGHT + 10;// 10 beauty space;
 		
-			printCenter("Ultimate TRIK Test v0.3 ", 0);
+			printCenter("TRIK Test v1.0", 0);
 			printCenter("Power button to exit ", SCREEN_HEIGHT - SYMBOL_HEIGHT * 2);
 			brick.display().addLabel("Special thanks to bschepan ", wordStartX, SCREEN_HEIGHT - SYMBOL_HEIGHT);
 			
-			
-			brick.display().setPainterWidth(2);
-			brick.display().drawRect(1, wordStartY + (pos - 1) * SYMBOL_HEIGHT, SCREEN_WIDTH, SYMBOL_HEIGHT);
-			
-			for (var i = 0; i < mainMenuItems.length; i++) {
-					brick.display().addLabel(mainMenuItems[i], 
-						wordStartX, wordStartY + i * SYMBOL_HEIGHT);
-			}
-			brick.display().redraw();
-			
-			var max_pos = mainMenuItems.length;
-			if (brick.keys().wasPressed(KeysEnum.Up)) {
-				pos = pos - 1;
-				if (pos < 1) {
-					pos = max_pos;
-				}
-				brick.display().clear();
-			}
-			if (brick.keys().wasPressed(KeysEnum.Down)) {
-				pos = pos + 1;
-				if (pos > max_pos) {
-					pos = 1;
-				}
-				brick.display().clear();
-			}
-			if (brick.keys().wasPressed(KeysEnum.Enter)) {
-				page = pos;
-				brick.display().clear();
-				brick.display().redraw();
-				brick.keys().reset();
-				break;
-			}
-			
-			break;
-		case 1:
-			if (brick.keys().wasPressed(KeysEnum.Esc)) {
-				page = 0;
-				previousMillis = 0;
-				script.system("/etc/init.d/object-sensor-ov7670 -p 0 stop");
-				script.system("/etc/init.d/object-sensor-ov7670 -p 1 stop");
-				brick.display().clear();
-				brick.display().redraw();
-				brick.keys().reset();
-				break;
-			}
-				var interval = 100;
-				var waitCameraStop = 8;
-				var waitCameraStart = 10;   // vars
-				var previousMillis = 0;     // for waiting
-				var loadCounter = 0; 	    // load process
-				var step = 0;
-			switch (step) {
-			case 0: 
-				brick.display().addLabel("Press Enter when the sensor",1, 70);
-				brick.display().addLabel(" in port Video1 is ready",1, 90);
-				brick.display().redraw();
-				
-				if (brick.keys().wasPressed(KeysEnum.Enter)) {
-					step = 1;
-					brick.display().clear();
-					brick.display().redraw();
-					brick.keys().reset();
-				}
-				break;
-			case 1:
-				printCenter("Port Video1", 70);
-				printCenter("Initialization...", 90);
-				brick.display().redraw();
-			
-				script.system("/etc/init.d/object-sensor-ov7670 -p 1 start");
-				
-				step = 2;
-				break;
-			case 2:
-				var currentMillis = script.time();
-				if (currentMillis - previousMillis > interval) {
-					previousMillis = currentMillis;
-					waitCounter++;
-					if (waitCounter > waitCameraStart) {
-						step = 3;
-						waitCounter = 0;
-						previousMillis = 0;
-						brick.display().clear();
-						printCenter("Enter to go to", 150);
-						printCenter("the next Video2 port", 170);
-						brick.display().redraw();
-					}
-				}
-				break;
-			case 3:
-				if (brick.keys().wasPressed(KeysEnum.Enter)) {
-					script.system("/etc/init.d/object-sensor-ov7670 -p 1 stop");
-					step = 4;
-					brick.keys().reset();
-				}
-				break;
-			case 4:
-				var currentMillis = script.time();
-				if (currentMillis - previousMillis > interval) {
-					previousMillis = currentMillis;
-					waitCounter++;
-					if (waitCounter > waitCameraStop) {
-						step = 5;
-						waitCounter = 0;
-						previousMillis = 0;
-						brick.display().clear();
-						brick.display().redraw();
-					}
-				}
-				break;
-			case 5:
-				brick.display().addLabel("Press Enter when the sensor",1, 70);
-				brick.display().addLabel(" in port Video2 is ready",1, 90);
-				brick.display().redraw();
-				
-				if (brick.keys().wasPressed(KeysEnum.Enter)) {
-					step = 6;
-					brick.display().clear();
-					brick.display().redraw();
-					brick.keys().reset();
-				}
-				break;
-			case 6:
-				printCenter("Port Video2", 70);
-				printCenter("Initialization...", 90);
-				brick.display().redraw();
-			
-				script.system("/etc/init.d/object-sensor-ov7670 -p 0 start");
-				
-				step = 7;
-				break;
-			case 7:
-				var currentMillis = script.time();
-				if (currentMillis - previousMillis > interval) {
-					previousMillis = currentMillis;
-					waitCounter++;
-					if (waitCounter > waitCameraStart) {
-						step = 8;
-						waitCounter = 0;
-						previousMillis = 0;
-						brick.display().clear();
-						printCenter("Enter to exit", 150);
-						brick.display().redraw();
-					}
-				}
-				break;
-			case 8:
-				if (brick.keys().wasPressed(KeysEnum.Enter)) {
-					script.system("/etc/init.d/object-sensor-ov7670 -p 1 stop");
-					step = 9;
-					brick.keys().reset();
-				}
-				break;
-			case 9:
-				var currentMillis = script.time();
-				if (currentMillis - previousMillis > interval) {
-					previousMillis = currentMillis;
-					waitCounter++;
-					if (waitCounter > waitCameraStop) {
-						step = 10;
-						waitCounter = 0;
-						previousMillis = 0;
-						brick.display().clear();
-						brick.display().redraw();
-					}
-				}
-				break;
-			case 10: 
-				page = 0;
-				brick.display().clear();
-				brick.display().redraw();
-				brick.keys().reset();
-			}
-			break;
-		case 2:
-			printCenter("Auto tested options", 0);
-			
 			var numberOfLines = 1;
-			var wordStartX = 1;
 			for (var key in testsMap) {
 				brick.display().addLabel(key + ": " + testsMap[key], wordStartX, SYMBOL_HEIGHT * numberOfLines);
 				numberOfLines++;
-				if (numberOfLines > SCREEN_HEIGHT / SYMBOL_HEIGHT) {
+				if (numberOfLines > (SCREEN_HEIGHT - SYMBOL_HEIGHT * 2) / SYMBOL_HEIGHT) {
 					wordStartX = SCREEN_WIDTH / 2;
 					numberOfLines = 1;
 				}
 			}
 			
 			if (brick.keys().wasPressed(KeysEnum.Esc)) {
-				page = 0;
-				brick.display().clear();
+				testsMap["Esc"] = successStatusText;
 			}
-		}
+			if (brick.keys().wasPressed(KeysEnum.Enter)) {
+				testsMap["Enter"] = successStatusText;
+			}
+			if (brick.keys().wasPressed(KeysEnum.Down)) {
+				testsMap["Down"] = successStatusText;
+			}
+			if (brick.keys().wasPressed(KeysEnum.Up)) {
+				testsMap["Up"] = successStatusText;
+			}
+			if (brick.keys().wasPressed(KeysEnum.Left)) {
+				testsMap["Left"] = successStatusText;
+			}
+			if (brick.keys().wasPressed(KeysEnum.Right)) {
+				testsMap["Right"] = successStatusText;
+			}
 		
 		brick.display().redraw();
 		script.wait(200);
