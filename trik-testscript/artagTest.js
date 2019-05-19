@@ -1,3 +1,5 @@
+ARTAG_CODE = 0;
+
 var IMAGE_HEIGHT = 120;
 var IMAGE_WIDTH;
 var SQUARE_NUMBER = 5;
@@ -174,7 +176,7 @@ var decodeARTag = function() {
 	return toDec(binNumber);
 }
 
-var artagTest = function()
+artagTest = function()
 {	
 	var photo = getPhoto();
 	//script.wait(1000);
@@ -195,45 +197,85 @@ var artagTest = function()
 		}
 	}
 	
+		var leftTop;
+		var leftBottom;
+		var rightBottom;
+		var rightTop;
+		
+		var nextStepCounter = 0;
+		var isDone = false;
+		
+		var leftTopTimer = script.timer(10);
+		leftTopTimer.timeout.connect(function () {
+			leftTopTimer.stop();
+			leftTop = leftTopPoint();
+			nextStepCounter++;
+		});
+		
+		var leftBottomTimer = script.timer(10);
+		leftBottomTimer.timeout.connect(function () {
+			leftBottomTimer.stop();
+			leftBottom = leftBottomPoint();
+			nextStepCounter++;
+		});
+		
+		var rightBottomTimer = script.timer(10);
+		rightBottomTimer.timeout.connect(function () {
+			rightBottomTimer.stop();
+			rightBottom = rightBottomPoint();
+			nextStepCounter++;
+		});
+		
+		var rightTopTimer = script.timer(10);
+		rightTopTimer.timeout.connect(function () {
+			rightTopTimer.stop();
+			rightTop = rightTopPoint();
+			nextStepCounter++;
+		});
 
-	var leftTop = leftTopPoint();
-	
-	var leftBottom = leftBottomPoint();
-	
-	var rightBottom = rightBottomPoint();
-	
-	var rightTop = rightTopPoint();
-	
-	leftTop[0] = min(leftTop[0], leftBottom[0]);
-	leftBottom[0] = leftTop[0];
-	
-	leftTop[1] = min(leftTop[1], rightTop[1]);
-	rightTop[1] = leftTop[1];
-	
-	leftBottom[1] = min(leftBottom[1], rightBottom[1]);
-	rightBottom[1] = leftBottom[1];
-	
-	rightTop[0] = min(rightTop[0], rightBottom[0]);
-	rightBottom[0] = rightTop[0];
-	
-	
-	var xSquareSize = Math.abs(leftTop[0] - rightTop[0]) / SQUARE_NUMBER;
-	var ySquareSize = Math.abs(leftTop[1] - leftBottom[1]) / SQUARE_NUMBER;
-	
-	var sqSize = max(Math.floor(xSquareSize), Math.floor(ySquareSize));
-	
-	for (var i = 0; i < SQUARE_NUMBER; i++) {
-		for (var j = 0; j < SQUARE_NUMBER; j++) {
-			if (isBlackArea(leftTop[0] + sqSize * j, leftTop[1] + sqSize * i, 
-			leftTop[0] + sqSize * (j + 1), leftTop[1] + sqSize * (i + 1))) 
-			{
-				ARTag[i * SQUARE_NUMBER + j] = 1;
+		var nextStepTimer = script.timer(50);
+	nextStepTimer.timeout.connect( function () {
+		nextStepTimer.stop();
+			if (nextStepCounter < 4) {
+				nextStepTimer.start();
 			}
 			else {
-				ARTag[i * SQUARE_NUMBER + j] = 0;
+				leftTop[0] = min(leftTop[0], leftBottom[0]);
+				leftBottom[0] = leftTop[0];
+				
+				leftTop[1] = min(leftTop[1], rightTop[1]);
+				rightTop[1] = leftTop[1];
+				
+				leftBottom[1] = min(leftBottom[1], rightBottom[1]);
+				rightBottom[1] = leftBottom[1];
+				
+				rightTop[0] = min(rightTop[0], rightBottom[0]);
+				rightBottom[0] = rightTop[0];
+				
+				
+				var xSquareSize = Math.abs(leftTop[0] - rightTop[0]) / SQUARE_NUMBER;
+				var ySquareSize = Math.abs(leftTop[1] - leftBottom[1]) / SQUARE_NUMBER;
+				
+				var sqSize = max(Math.floor(xSquareSize), Math.floor(ySquareSize));
+				
+				for (var i = 0; i < SQUARE_NUMBER; i++) {
+					for (var j = 0; j < SQUARE_NUMBER; j++) {
+						if (isBlackArea(leftTop[0] + sqSize * j, leftTop[1] + sqSize * i, 
+						leftTop[0] + sqSize * (j + 1), leftTop[1] + sqSize * (i + 1))) 
+						{
+							ARTag[i * SQUARE_NUMBER + j] = 1;
+						}
+						else {
+							ARTag[i * SQUARE_NUMBER + j] = 0;
+						}
+					}
+				}	
+				print(decodeARTag() == EXPECTED_CODE);
+				
+				isDone = true;
 			}
-		}
-	}	
-
-	print(decodeARTag() == EXPECTED_CODE);
+	});
+	
+	while (!isDone) {}
+	return decodeARTag();
 }

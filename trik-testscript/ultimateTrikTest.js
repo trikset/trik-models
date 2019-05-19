@@ -7,15 +7,14 @@ var SCREEN_HEIGHT = 279;
 var CAMERA_CHECK_VALUE = 371;
 var SENSOR_CHECK_COUNTER = 2; // check every 1 sec, so for 2 checks you need to waitStatusText at least 3 sec
 var waitStatusText = "...";
-var errorStatusText = "errorStatusTextOR";
+var errorStatusText = "ERROR";
 var successStatusText = "gud";
 include("artagTest.js"); ///////////////// tmp path /home/root/trik/scripts/
 
-
-var testsMap = {"E1": waitStatusText, "E2": waitStatusText, "E3": waitStatusText, "E4": waitStatusText, 
+var testsMap = {"E1": waitStatusText, "E2": waitStatusText, "E3": waitStatusText, "E4": waitStatusText,
 	"Gyro": waitStatusText, "Accel": waitStatusText, "D1": waitStatusText, "D2": waitStatusText, "A1": waitStatusText,
 	"A2": waitStatusText, "A3": waitStatusText, "A4": waitStatusText, "A5": waitStatusText, "A6": waitStatusText,
-	"Camera": waitStatusText, "Esc": waitStatusText, "Enter": waitStatusText, "Up": waitStatusText, 
+	"Camera": waitStatusText, "Esc": waitStatusText, "Enter": waitStatusText, "Up": waitStatusText,
 	"Down": waitStatusText, "Left": waitStatusText, "Right": waitStatusText};
 
 var printCenter = function (text, y) {
@@ -58,6 +57,20 @@ function sensorTest(sensor, timer, counter, benchmark, range) {
 	}
 	timer.start();
 	return counter;
+}
+
+function gaTest(sensor, timer) {
+	timer.stop();
+	var value = brick.accelerometer().read();
+	var A = value[0] == 0;
+	var B = value[1] == 0;
+	var C = value[2] == 0;
+	print("" sensor + " " + value);
+	
+	if (!(A || B || C))
+			testsMap[sensor] = successStatusText;
+	else 
+		timer.start();	
 }
 
 var main = function()
@@ -106,33 +119,18 @@ var main = function()
 	});
 	
 	///GA
+	//Среднее по движению
 	var GA_TIMER = 100;
 	// Gyroscope
 	var gyroTimer = script.timer(GA_TIMER);
 	gyroTimer.timeout.connect(function () {
-		gyroTimer.stop();
-		var A = brick.gyroscope().read()[0] == 0;
-		var B = brick.gyroscope().read()[1] == 0;
-		var C = brick.gyroscope().read()[2] == 0;
-		if (!(A || B || C)) {
-			testsMap["Gyro"] = successStatusText;
-			return;
-		}	
-		gyroTimer.start();
+		gaTest("Gyro", gyroTimer);
 	});
 	
 	// Accelerometer
 	var accelTimer = script.timer(GA_TIMER);
 	accelTimer.timeout.connect(function () {
-		accelTimer.stop();
-		var A = brick.accelerometer().read()[0] == 0;
-		var B = brick.accelerometer().read()[1] == 0;
-		var C = brick.accelerometer().read()[2] == 0;
-		if (!(A || B || C)) {
-			testsMap["Accel"] = successStatusText;
-			return;
-		}	
-		accelTimer.start();
+		gaTest("Accel", accelTimer);
 	});
 	
 	// USensors
@@ -194,10 +192,12 @@ var main = function()
 	});
 		
 	var CAMERA_TIMER = 1000;
-	var artagValue;
+	var artagValue = 0;
 	var cameraTimer = script.timer(CAMERA_TIMER);
 	cameraTimer.timeout.connect(function () {
+		cameraTimer.stop();
 		artagValue = artagTest();
+		print(artagValue);
 		if (artagValue == CAMERA_CHECK_VALUE) {
 			testsMap["Camera"] = successStatusText;
 		}
