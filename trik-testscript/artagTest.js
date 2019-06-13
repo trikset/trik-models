@@ -1,20 +1,23 @@
 ARTAG_CODE = 0;
 
-var IMAGE_HEIGHT = 120;
+IMAGE_HEIGHT = 120;
 var IMAGE_WIDTH;
 var SQUARE_NUMBER = 5;
 var BIN_IMAGE = [];
 var ARTag = [];
 var EXPECTED_CODE = 371;
 
+var IS_PHOTO_REAL_CHECK_COUNTER = 10;
+var IS_PHOTO_REAL_CHECK_SUM = 50;
+
 var AREA_CHECK = 10;
 
 var COLOR_TRESHOLD = 70;
 
-var otsu = function (photo) {
+var otsu = function (photo) { 
 	var histogram = [];
 	for (i = 0; i < 256; ++i)
-		histogram[i] = 0;
+		histogram[i] = 0; 
 	for (var h = 0; h < IMAGE_HEIGHT; h++) {
 		for (var w = 0; w < IMAGE_WIDTH; w++) {
 			rgb888 = photo[h * IMAGE_WIDTH + w];
@@ -35,23 +38,37 @@ var otsu = function (photo) {
 	var max = 0;
 	var between;
 	var threshold = 0;
+	var stopIndex = 255;
 	for (var i = 0; i < 256; ++i) {
 		wB += histogram[i];
 		if (wB == 0)
 			continue;
 		wF = pixelsNumber - wB;
-		if (wF == 0)
+		if (wF == 0) {
+			stopIndex = i;
 			break;
+		}
 		sumB += i * histogram[i];
 		mB = sumB / wB;
 		mF = (sum - sumB) / wF;
-		between = wB * wF * Math.pow(mB - mF, 2);
+		between = wB * wF * (mB - mF) * (mB - mF);
 		if (between > max) {
 			max = between;
 			threshold = i;
 		}
 	}
-    return threshold;
+	var isPhotoRealCheckSum = 0;
+	for (var i = stopIndex; i > stopIndex - IS_PHOTO_REAL_CHECK_COUNTER; i--) {
+		isPhotoRealCheckSum += histogram[i];
+	}
+	if (isPhotoRealCheckSum > IS_PHOTO_REAL_CHECK_SUM) {
+		return threshold;
+	}
+	else {
+		//print(histogram);
+		//print("" + threshold + " : " + histogram[threshold]);
+		return -1;
+	}
 }
 
 
@@ -185,6 +202,8 @@ artagTest = function()
 	IMAGE_WIDTH = photo.length / IMAGE_HEIGHT;
 	
 	COLOR_TRESHOLD = otsu(photo);
+	if (COLOR_TRESHOLD < 0)
+		return -1;
 	
 	for (var h = 0; h < IMAGE_HEIGHT; h+= 1) { //// Binary black/white
 		for (var w = 0; w < IMAGE_WIDTH; w+= 1) {
@@ -269,9 +288,7 @@ artagTest = function()
 							ARTag[i * SQUARE_NUMBER + j] = 0;
 						}
 					}
-				}	
-				print(decodeARTag() == EXPECTED_CODE);
-				
+				}					
 				isDone = true;
 			}
 	});
