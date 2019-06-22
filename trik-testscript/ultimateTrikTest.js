@@ -4,13 +4,34 @@ var SYMBOL_WIDTH = 10;
 var SYMBOL_HEIGHT = 20;
 var SCREEN_WIDTH = 240;
 var SCREEN_HEIGHT = 279;
-var CAMERA_CHECK_VALUE = 371;
-var SENSOR_CHECK_COUNTER = 2; // check every 1 sec, so for 2 checks you need to waitStatusText at least 3 sec
-var GA_CHECK_VALUE = 100;
 var waitStatusText = "...";
 var errorStatusText = -1;
 var successStatusText = "ok";
 var timeStart = Date.now();
+
+var REDRAW_TIMER = 500;
+var CONSOLE_TIMER = 2000;
+
+var CAMERA_TIMER = 1000;
+var CAMERA_CHECK_VALUE = 371;
+
+var MOTORS_TIMER = 500;
+var MOTORS_START_POWER = 100;
+var SERV_START_POWER = 100;
+
+var GA_TIMER = 100;
+var GA_CHECK_VALUE = 100;
+
+var ASENSOR_TIMER = 500;
+var ASensorRange = 350;
+var ASensorBenchmark = 850;
+
+var DSENSOR_TIMER = 1000;
+var DSensorRange = 250;
+var DSensorBenchmark = 750;
+
+var SENSOR_CHECK_COUNTER = 2; // check every 1 sec, so for 2 checks you need to waitStatusText at least 3 sec
+
  
 include("/home/root/trik/scripts/artagTest.js"); ///////////////// tmp path /home/root/trik/scripts/
 	
@@ -79,8 +100,8 @@ function encoderTest(motor, encoder, timer, previousValue) {
 }
 
 function sensorTest(sensor, timer, counter, benchmark, range, tests) {
-	timer.stop;
-	var currentValue = brick.sensor(sensor).read();
+	timer.stop();
+	var currentValue = brick.sensor(sensor).readRawData();
 	var tmp = (currentValue - benchmark) * (currentValue - benchmark);
 	consoleOutput[sensor] = currentValue;
 	if (tmp < range * range) {
@@ -90,9 +111,6 @@ function sensorTest(sensor, timer, counter, benchmark, range, tests) {
 			return 0;
 		}
 	} 
-	else {
-		counter = 0;
-	}
 	timer.start();
 	return counter;
 }
@@ -106,7 +124,7 @@ function gaTest(sensorName, sensor, timer) { // Attention!!
 	consoleOutput[sensorName] = "" + value[0] + " " + value[1] + " " + value[2];
 	
 	if (!(A || B || C))
-			agTests[sensorName] = successStatusText;
+		agTests[sensorName] = successStatusText;
 	else 
 		timer.start();	
 }
@@ -117,14 +135,14 @@ brick.display().clear();
 brick.display().redraw();
 
 for (var i = 1; i <= 6; i++) {
-	brick.motor('S' + i).setPower(100);
+	brick.motor('S' + i).setPower(MOTORS_START_POWER);
 }
+
 for (var i = 1; i <= 4; i++) {
-	brick.motor('M' + i).setPower(100);
+	brick.motor('M' + i).setPower(SERV_START_POWER);
 }
 
 ///Motors encoders
-var MOTORS_TIMER = 2000;
 
 //E1 M1 test
 var prevE1Value = 0;
@@ -156,7 +174,6 @@ e4Timer.timeout.connect(function () {
 
 ///GA
 //Среднее по движению
-var GA_TIMER = 100;
 // Gyroscope
 var gyroTimer = script.timer(GA_TIMER);
 gyroTimer.timeout.connect(function () {
@@ -170,9 +187,7 @@ accelTimer.timeout.connect(function () {
 });
 
 // USensors
-var DSENSOR_TIMER = 1000;
-var DSensorRange = 100;
-var DSensorBenchmark = 123456;
+
 
 var d1Counter = 0;
 var d1Timer = script.timer(DSENSOR_TIMER);
@@ -187,43 +202,47 @@ d2Timer.timeout.connect(function () {
 });
 
 //AnalogSensor
-var ASENSOR_TIMER = 1000;
-var ASensorRange = 100;
-var ASensorBenchmark = 123456;
+
 
 var a1Counter = 0;
 var a1Timer = script.timer(ASENSOR_TIMER);
 a1Timer.timeout.connect(function () {
+	brick.motor(S1).setPower(-1 * brick.motor(S1).power());
 	a1Counter = sensorTest(A1, a1Timer, a1Counter, ASensorBenchmark, ASensorRange, aTests);
 });
 
 var a2Counter = 0;
 var a2Timer = script.timer(ASENSOR_TIMER);
 a2Timer.timeout.connect(function () {
+	brick.motor('S2').setPower(-1 * brick.motor('S2').power());
 	a2Counter = sensorTest(A2, a2Timer, a2Counter, ASensorBenchmark, ASensorRange, aTests);
 });
 
 var a3Counter = 0;
 var a3Timer = script.timer(ASENSOR_TIMER);
 a3Timer.timeout.connect(function () {
+	brick.motor(S3).setPower(-1 * brick.motor(S3).power());
 	a3Counter = sensorTest(A3, a3Timer, a3Counter, ASensorBenchmark, ASensorRange, aTests);
 });
 
 var a4Counter = 0;
 var a4Timer = script.timer(ASENSOR_TIMER);
 a4Timer.timeout.connect(function () {
+	brick.motor(S4).setPower(-1 * brick.motor(S4).power());
 	a4Counter = sensorTest(A4, a4Timer, a4Counter, ASensorBenchmark, ASensorRange, aTests);
 });
 
 var a5Counter = 0;
 var a5Timer = script.timer(ASENSOR_TIMER);
 a5Timer.timeout.connect(function () {
+	brick.motor(S5).setPower(-1 * brick.motor(S5).power());
 	a5Counter = sensorTest(A5, a5Timer, a5Counter, ASensorBenchmark, ASensorRange, aTests);
 });
 
 var a6Counter = 0;
 var a6Timer = script.timer(ASENSOR_TIMER);
 a6Timer.timeout.connect(function () {
+	brick.motor(S6).setPower(-1 * brick.motor(S6).power());
 	a6Counter = sensorTest(A6, a6Timer, a6Counter, ASensorBenchmark, ASensorRange, aTests);
 });
 
@@ -265,7 +284,6 @@ brick.keys().buttonPressed.connect(function(b,v) {
 		}
 });
 	
-var CAMERA_TIMER = 1000;
 var artagValue = 0;
 var cameraTimer = script.timer(CAMERA_TIMER);
 cameraTimer.timeout.connect(function () {
@@ -287,7 +305,6 @@ cameraTimer.timeout.connect(function () {
 	}
 });
 
-var CONSOLE_TIMER = 2000;
 var consoleOutputTimer = script.timer(CONSOLE_TIMER);
 consoleOutputTimer.timeout.connect(function () {
 	consoleOutputTimer.stop();
@@ -301,7 +318,6 @@ consoleOutputTimer.timeout.connect(function () {
 	consoleOutputTimer.start();
 });
 
-var REDRAW_TIMER = 500;
 var redrawTimer = script.timer(REDRAW_TIMER); 
 redrawTimer.stop();
 
