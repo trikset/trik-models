@@ -4,9 +4,9 @@ var SYMBOL_WIDTH = 10;
 var SYMBOL_HEIGHT = 20;
 var SCREEN_WIDTH = 240;
 var SCREEN_HEIGHT = 279;
-var waitStatusText = "...";
-var errorStatusText = -1;
-var successStatusText = "ok";
+var waitStatusCode = 0;
+var errorStatusCode = -1;
+var successStatusCode = 1;
 var timeStart = Date.now();
 
 var REDRAW_TIMER = 500;
@@ -30,30 +30,30 @@ var DSENSOR_TIMER = 1000;
 var DSensorRange = 250;
 var DSensorBenchmark = 750;
 
-var SENSOR_CHECK_COUNTER = 2; // check every 1 sec, so for 2 checks you need to waitStatusText at least 3 sec
+var SENSOR_CHECK_COUNTER = 2; // check every 1 sec, so for 2 checks you need to waitStatusCode at least 3 sec
 
  
 include("/home/root/trik/scripts/artagTest.js"); ///////////////// tmp path /home/root/trik/scripts/
 	
-var edTests = {"E1": waitStatusText, "E2": waitStatusText, "E3": waitStatusText, "E4": waitStatusText, 
-	"D1": waitStatusText, "D2": waitStatusText};
+var edTests = {"E1": waitStatusCode, "E2": waitStatusCode, "E3": waitStatusCode, "E4": waitStatusCode, 
+	"D1": waitStatusCode, "D2": waitStatusCode};
 
-var aTests = {"A1": waitStatusText, "A2": waitStatusText, "A3": waitStatusText, "A4": waitStatusText, 
-	"A5": waitStatusText, "A6": waitStatusText};
+var aTests = {"A1": waitStatusCode, "A2": waitStatusCode, "A3": waitStatusCode, "A4": waitStatusCode, 
+	"A5": waitStatusCode, "A6": waitStatusCode};
 
-var agTests = {"Gyro": waitStatusText, "Accel": waitStatusText};
+var agTests = {"Gyro": waitStatusCode, "Accel": waitStatusCode};
 
 //🞫 ✔ ▲ ▼ ◀ ▶
-var buttonTests = {"Esc": waitStatusText, "Enter": waitStatusText, "Up": waitStatusText, "Down": waitStatusText, 
-	"Left": waitStatusText, "Right": waitStatusText};
+var buttonTests = {"Esc": waitStatusCode, "Enter": waitStatusCode, "Up": waitStatusCode, "Down": waitStatusCode, 
+	"Left": waitStatusCode, "Right": waitStatusCode};
 
-var cameraTests = {"Camera": waitStatusText};
+var cameraTests = {"Camera": waitStatusCode};
 
-var consoleOutput = {"E1": waitStatusText, "E2": waitStatusText, "E3": waitStatusText, "E4": waitStatusText,
-	"Gyro": waitStatusText, "Accel": waitStatusText, "D1": waitStatusText, "D2": waitStatusText, "A1": waitStatusText,
-	"A2": waitStatusText, "A3": waitStatusText, "A4": waitStatusText, "A5": waitStatusText, "A6": waitStatusText,
-	"Camera": waitStatusText, "Esc": waitStatusText, "Enter": waitStatusText, "Up": waitStatusText,
-	"Down": waitStatusText, "Left": waitStatusText, "Right": waitStatusText};
+var consoleOutput = {"E1": waitStatusCode, "E2": waitStatusCode, "E3": waitStatusCode, "E4": waitStatusCode,
+	"Gyro": waitStatusCode, "Accel": waitStatusCode, "D1": waitStatusCode, "D2": waitStatusCode, "A1": waitStatusCode,
+	"A2": waitStatusCode, "A3": waitStatusCode, "A4": waitStatusCode, "A5": waitStatusCode, "A6": waitStatusCode,
+	"Camera": waitStatusCode, "Esc": waitStatusCode, "Enter": waitStatusCode, "Up": waitStatusCode,
+	"Down": waitStatusCode, "Left": waitStatusCode, "Right": waitStatusCode};
 
 var printCenter = function (text, y) {
 	brick.display().addLabel(text, (SCREEN_WIDTH - text.length * SYMBOL_WIDTH) / 2, y);
@@ -64,7 +64,7 @@ var printStatus = function (text, y, status) {
 	brick.display().addLabel(text, 1, y);
 	var i = 0;
 	for (var key in status) {
-		if (status[key] == successStatusText) {
+		if (status[key] == successStatusCode) {
 			brick.display().setPainterColor("Green");
 		}
 		else {
@@ -78,8 +78,7 @@ var printStatus = function (text, y, status) {
 
 }
 
-function encoderTest(motor, encoder, timer, previousValue) {
-	timer.stop();
+function encoderTest(motor, encoder, previousValue) {
 	var currentValue = brick.encoder(encoder).read();
 	consoleOutput[encoder] = currentValue;
 	brick.encoder(encoder).reset();
@@ -87,31 +86,28 @@ function encoderTest(motor, encoder, timer, previousValue) {
 	brick.motor(motor).setPower(-1 * brick.motor(motor).power());
 	
 	if (previousValue * currentValue < 0) {
-		edTests[encoder] = successStatusText;
+		edTests[encoder] = successStatusCode;
 		brick.motor(motor).powerOff();
 	}
 	else {
 		if (previousValue != 0 && currentValue != 0) {
-			edTests[encoder] = errorStatusText;
+			edTests[encoder] = errorStatusCode;
 		}
-		timer.start();
 	}
 	return currentValue;
 }
 
-function sensorTest(sensor, timer, counter, benchmark, range, tests) {
-	timer.stop();
+function sensorTest(sensor, counter, benchmark, range, tests) {
 	var currentValue = brick.sensor(sensor).readRawData();
 	var tmp = (currentValue - benchmark) * (currentValue - benchmark);
 	consoleOutput[sensor] = currentValue;
 	if (tmp < range * range) {
 		counter++;
 		if (counter >= SENSOR_CHECK_COUNTER) {
-			tests[sensor] = successStatusText;
+			tests[sensor] = successStatusCode;
 			return 0;
 		}
 	} 
-	timer.start();
 	return counter;
 }
 
@@ -124,7 +120,7 @@ function gaTest(sensorName, sensor, timer) { // Attention!!
 	consoleOutput[sensorName] = "" + value[0] + " " + value[1] + " " + value[2];
 	
 	if (!(A || B || C))
-		agTests[sensorName] = successStatusText;
+		agTests[sensorName] = successStatusCode;
 	else 
 		timer.start();	
 }
@@ -143,33 +139,22 @@ for (var i = 1; i <= 4; i++) {
 }
 
 ///Motors encoders
-
-//E1 M1 test
-var prevE1Value = 0;
-var e1Timer = script.timer(MOTORS_TIMER);
-e1Timer.timeout.connect(function () {
-	prevE1Value = encoderTest(M1, E1, e1Timer, prevE1Value);
-});
-
-//E2 M2 test
-var prevE2Value = 0;
-var e2Timer = script.timer(MOTORS_TIMER);
-e2Timer.timeout.connect(function () {
-	prevE2Value = encoderTest(M2, E2, e2Timer, prevE2Value);
-});
-
-//E3 M3 test
-var prevE3Value = 0;
-var e3Timer = script.timer(MOTORS_TIMER);
-e3Timer.timeout.connect(function () {
-	prevE3Value = encoderTest(M3, E3, e3Timer, prevE3Value);
-});
-
-//E4 M4 test
-var prevE4Value = 0;
-var e4Timer = script.timer(MOTORS_TIMER);
-e4Timer.timeout.connect(function () {
-	prevE4Value = encoderTest(M4, E4, e4Timer, prevE4Value);
+var prevEncodersValues = [0,0,0,0];
+var encoderTimer = script.timer(MOTORS_TIMER);
+encoderTimer.timeout.connect(function () {
+	encoderTimer.stop();
+	var isFinished = true;
+	for (var i = 1; i < prevEncodersValues.length; i++) {
+		var ePort = "E" + i;
+		var mPort = "M" + i;
+		if (edTests[port] != successStatusCode) {
+			isFinished = false;
+			prevEncodersValues[i - 1] = encoderTest(mPort, ePort, prevEncodersValues[i - 1]);
+		}
+	}
+	
+	if (!isFinished)
+		distanceTimer.start();
 });
 
 ///GA
@@ -187,63 +172,43 @@ accelTimer.timeout.connect(function () {
 });
 
 // USensors
+var distanceCounter = [0,0];
+var distanceTimer =  = script.timer(DSENSOR_TIMER);
+distanceTimer.timeout.connect(function () {
+	distanceTimer.stop();
+	var isFinished = true;
+	for (var i = 1; i <= distanceCounter.length; i++) {
+		var dPort = "D" + i;
 
-
-var d1Counter = 0;
-var d1Timer = script.timer(DSENSOR_TIMER);
-d1Timer.timeout.connect(function () {
-	d1Counter = sensorTest(D1, d1Timer, d1Counter, DSensorBenchmark, DSensorRange, edTests);
-});
-
-var d2Counter = 0;
-var d2Timer = script.timer(DSENSOR_TIMER);
-d2Timer.timeout.connect(function () {
-	d2Counter = sensorTest(D2, d2Timer, d2Counter, DSensorBenchmark, DSensorRange, edTests);
+		if (edTests[dPort] != successStatusCode) {
+			isFinished = false;
+			distanceCounter[i - 1] = sensorTest(dPort, distanceCounter[i - 1], DSensorBenchmark, DSensorRange, edTests);
+		}
+	}
+	
+	if (!isFinished)
+		distanceTimer.start();
 });
 
 //AnalogSensor
+var analogCounter = [0,0,0,0,0,0];
+var analogTimer = script.timer(ASENSOR_TIMER);
+analogTimer.timeout.connect(function () {
+	analogTimer.stop();
+	var isFinished = true;
+	for (var i = 1; i < analogCounter.length; i++) {
+		var sPort = "S" + i;
+		var aPort = "A" + i;
 
-
-var a1Counter = 0;
-var a1Timer = script.timer(ASENSOR_TIMER);
-a1Timer.timeout.connect(function () {
-	brick.motor(S1).setPower(-1 * brick.motor(S1).power());
-	a1Counter = sensorTest(A1, a1Timer, a1Counter, ASensorBenchmark, ASensorRange, aTests);
-});
-
-var a2Counter = 0;
-var a2Timer = script.timer(ASENSOR_TIMER);
-a2Timer.timeout.connect(function () {
-	brick.motor('S2').setPower(-1 * brick.motor('S2').power());
-	a2Counter = sensorTest(A2, a2Timer, a2Counter, ASensorBenchmark, ASensorRange, aTests);
-});
-
-var a3Counter = 0;
-var a3Timer = script.timer(ASENSOR_TIMER);
-a3Timer.timeout.connect(function () {
-	brick.motor(S3).setPower(-1 * brick.motor(S3).power());
-	a3Counter = sensorTest(A3, a3Timer, a3Counter, ASensorBenchmark, ASensorRange, aTests);
-});
-
-var a4Counter = 0;
-var a4Timer = script.timer(ASENSOR_TIMER);
-a4Timer.timeout.connect(function () {
-	brick.motor(S4).setPower(-1 * brick.motor(S4).power());
-	a4Counter = sensorTest(A4, a4Timer, a4Counter, ASensorBenchmark, ASensorRange, aTests);
-});
-
-var a5Counter = 0;
-var a5Timer = script.timer(ASENSOR_TIMER);
-a5Timer.timeout.connect(function () {
-	brick.motor(S5).setPower(-1 * brick.motor(S5).power());
-	a5Counter = sensorTest(A5, a5Timer, a5Counter, ASensorBenchmark, ASensorRange, aTests);
-});
-
-var a6Counter = 0;
-var a6Timer = script.timer(ASENSOR_TIMER);
-a6Timer.timeout.connect(function () {
-	brick.motor(S6).setPower(-1 * brick.motor(S6).power());
-	a6Counter = sensorTest(A6, a6Timer, a6Counter, ASensorBenchmark, ASensorRange, aTests);
+		if (aTest[aPort] != successStatusCode) {
+			isFinished = false;
+			brick.motor(sPort).setPower(-1 * brick.motor(sPort).power());
+			analogCounter[i - 1] = sensorTest(aPort, analogCounter[i - 1], ASensorBenchmark, ASensorRange, aTests);
+		}
+	}
+	
+	if (!isFinished)
+		analogTimer.start();
 });
 
 brick.keys().buttonPressed.connect(function(b,v) {
@@ -254,27 +219,27 @@ brick.keys().buttonPressed.connect(function(b,v) {
 	}
 	switch (b) {
 		case KeysEnum.Esc:
-			buttonTests["Esc"] = successStatusText;
+			buttonTests["Esc"] = successStatusCode;
 			consoleOutput["Esc"] = "pressed";
 			break;
 		case KeysEnum.Enter:
-			buttonTests["Enter"] = successStatusText;
+			buttonTests["Enter"] = successStatusCode;
 			consoleOutput["Enter"] = "pressed";
 			break;
 		case KeysEnum.Down:
-			buttonTests["Down"] = successStatusText;
+			buttonTests["Down"] = successStatusCode;
 			consoleOutput["Down"] = "pressed";
 			break;
 		case KeysEnum.Up:
-			buttonTests["Up"] = successStatusText;
+			buttonTests["Up"] = successStatusCode;
 			consoleOutput["Up"] = "pressed";
 			break;
 		case KeysEnum.Left:
-			buttonTests["Left"] = successStatusText;
+			buttonTests["Left"] = successStatusCode;
 			consoleOutput["Left"] = "pressed";
 			break;
 		case KeysEnum.Right:
-			buttonTests["Right"] = successStatusText;
+			buttonTests["Right"] = successStatusCode;
 			consoleOutput["Right"] = "pressed";
 			break;
 		case KeysEnum.Power: 
@@ -293,7 +258,7 @@ cameraTimer.timeout.connect(function () {
 	artagValue = artagTest();
 	//print(artagValue);
 	if (artagValue == CAMERA_CHECK_VALUE) {
-		cameraTests["Camera"] = successStatusText;
+		cameraTests["Camera"] = successStatusCode;
 		consoleOutput["Camera"] = artagValue;
 	}
 	else {
@@ -341,6 +306,7 @@ var redrawFunc = function () {
 	brick.display().redraw();
 	redrawTimer.start();
 }
+
 redrawTimer.timeout.connect(redrawFunc)
 redrawFunc();
 script.run();
