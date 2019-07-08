@@ -58,7 +58,7 @@ gamepad.padUp.connect(
     }
 );
 
-gamepad.disconnect(function() {brick.stop()});
+gamepad.disconnected.connect(function() {brick.stop()});
 
 brick.repeat(refreshRate,
     function() {
