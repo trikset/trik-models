@@ -86,10 +86,17 @@ var controlFork = function(x) {
 
 // Gamepad mode
 
-gamepad.disconnect.connect(
+gamepad.disconnected.connect(
 	function() {
+		brick.playTone(500,500);
 		stopMotionMotors();
 		stopForkMotors();		
+	}
+)
+
+gamepad.connected.connect(
+	function() {
+		brick.playTone(300,500);
 	}
 )
 

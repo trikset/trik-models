@@ -119,8 +119,15 @@ var hsvToRgb = function(h, s, v) {
 
 // Gamepad mode
 
-gamepad.disconnect.connect(
+gamepad.disconnected.connect(
 	function() {
+		brick.playTone(300,1000);
+	}
+)
+
+gamepad.connected.connect(
+	function() {
+		brick.playTone(500,1000);
 	}
 )
 
