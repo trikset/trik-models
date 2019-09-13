@@ -196,8 +196,6 @@ var decodeARTag = function() {
 artagTest = function()
 {	
 	var photo = getPhoto();
-	//script.wait(1000);
-	
 	
 	IMAGE_WIDTH = photo.length / IMAGE_HEIGHT;
 	
@@ -294,5 +292,5 @@ artagTest = function()
 	});
 	
 	while (!isDone) {}
-	return decodeARTag();
+	return [decodeARTag(), photo];
 }
