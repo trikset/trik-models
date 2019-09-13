@@ -1,5 +1,3 @@
-var __interpretation_started_timestamp__;
-var pi = 3.1415926535897931;
 var SYMBOL_WIDTH = 10;
 var SYMBOL_HEIGHT = 20;
 var SCREEN_WIDTH = 240;
@@ -34,7 +32,7 @@ var DSensorBenchmark = 750;
 var SENSOR_CHECK_COUNTER = 2; // check every 1 sec, so for 2 checks you need to waitStatusCode at least 3 sec
 
  
-include("/home/root/trik/scripts/artagTest.js"); ///////////////// tmp path /home/root/trik/scripts/
+include("/home/root/trik/scripts/artagTest.js");
 	
 var edTests = {"E1": waitStatusCode, "E2": waitStatusCode, "E3": waitStatusCode, "E4": waitStatusCode, 
 	"D1": waitStatusCode, "D2": waitStatusCode};
@@ -112,7 +110,7 @@ function sensorTest(sensor, counter, benchmark, range, tests) {
 	return counter;
 }
 
-function gaTest(sensorName, sensor, timer) { // Attention!!
+function gaTest(sensorName, sensor, timer) {
 	timer.stop();
 	var value = sensor.read();
 	var A = value[0] > GA_CHECK_VALUE || value[0] < (-1) * GA_CHECK_VALUE;
@@ -158,8 +156,6 @@ encoderTimer.timeout.connect(function () {
 		distanceTimer.start();
 });
 
-///GA
-//Среднее по движению
 // Gyroscope
 var gyroTimer = script.timer(GA_TIMER);
 gyroTimer.timeout.connect(function () {
@@ -212,7 +208,8 @@ analogTimer.timeout.connect(function () {
 		analogTimer.start();
 });
 
-brick.keys().buttonPressed.connect(function(b,v) {
+// Buttons
+brick.keys().buttonPressed.connect(function(b, v) {
 	if (b == KeysEnum.Power) { // for trikRun console
 		var cursorBackPos = consoleOutput.length + 1;
 		print("\033[" + cursorBackPos + "E");
@@ -259,6 +256,7 @@ brick.keys().buttonPressed.connect(function(b,v) {
 });
 
 
+// Camera
 var artagValue = 0;
 var cameraOutput;
 var cameraTimer = script.timer(CAMERA_TIMER);
@@ -307,7 +305,6 @@ redrawTimer.stop();
 var redrawFunc = function () {
 	redrawTimer.stop();
 	var wordStartX = 1;
-	var wordStartY = 1 * SYMBOL_HEIGHT + 10; // 10 beauty space;
 	
 	brick.display().setPainterColor("Black");
 	if (!isShowingPhoto) {
