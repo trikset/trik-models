@@ -209,7 +209,7 @@ analogTimer.timeout.connect(function () {
 });
 
 // Buttons
-brick.keys().buttonPressed.connect(function(b, v) {
+brick.keys().buttonPressed.connect(function(b) {
 	if (b == KeysEnum.Power) { // for trikRun console
 		var cursorBackPos = consoleOutput.length + 1;
 		print("\033[" + cursorBackPos + "E");
