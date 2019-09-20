@@ -1,5 +1,3 @@
-var __interpretation_started_timestamp__;
-var pi = 3.1415926535897931;
 var SYMBOL_WIDTH = 10;
 var SYMBOL_HEIGHT = 20;
 var SCREEN_WIDTH = 240;
@@ -7,6 +5,7 @@ var SCREEN_HEIGHT = 279;
 var waitStatusCode = 0;
 var errorStatusCode = -1;
 var successStatusCode = 1;
+var isShowingPhoto = false;
 var timeStart = Date.now();
 
 var REDRAW_TIMER = 500;
@@ -33,7 +32,7 @@ var DSensorBenchmark = 750;
 var SENSOR_CHECK_COUNTER = 2; // check every 1 sec, so for 2 checks you need to waitStatusCode at least 3 sec
 
  
-include("/home/root/trik/scripts/artagTest.js"); ///////////////// tmp path /home/root/trik/scripts/
+include("/home/root/trik/scripts/artagTest.js");
 	
 var edTests = {"E1": waitStatusCode, "E2": waitStatusCode, "E3": waitStatusCode, "E4": waitStatusCode, 
 	"D1": waitStatusCode, "D2": waitStatusCode};
@@ -111,7 +110,7 @@ function sensorTest(sensor, counter, benchmark, range, tests) {
 	return counter;
 }
 
-function gaTest(sensorName, sensor, timer) { // Attention!!
+function gaTest(sensorName, sensor, timer) {
 	timer.stop();
 	var value = sensor.read();
 	var A = value[0] > GA_CHECK_VALUE || value[0] < (-1) * GA_CHECK_VALUE;
@@ -157,8 +156,6 @@ encoderTimer.timeout.connect(function () {
 		distanceTimer.start();
 });
 
-///GA
-//Среднее по движению
 // Gyroscope
 var gyroTimer = script.timer(GA_TIMER);
 gyroTimer.timeout.connect(function () {
@@ -173,7 +170,7 @@ accelTimer.timeout.connect(function () {
 
 // USensors
 var distanceCounter = [0,0];
-var distanceTimer =  = script.timer(DSENSOR_TIMER);
+var distanceTimer = script.timer(DSENSOR_TIMER);
 distanceTimer.timeout.connect(function () {
 	distanceTimer.stop();
 	var isFinished = true;
@@ -211,7 +208,8 @@ analogTimer.timeout.connect(function () {
 		analogTimer.start();
 });
 
-brick.keys().buttonPressed.connect(function(b,v) {
+// Buttons
+brick.keys().buttonPressed.connect(function(b) {
 	if (b == KeysEnum.Power) { // for trikRun console
 		var cursorBackPos = consoleOutput.length + 1;
 		print("\033[" + cursorBackPos + "E");
@@ -221,10 +219,18 @@ brick.keys().buttonPressed.connect(function(b,v) {
 		case KeysEnum.Esc:
 			buttonTests["Esc"] = successStatusCode;
 			consoleOutput["Esc"] = "pressed";
+			if (isShowingPhoto) {
+				brick.display().clear();
+				isShowingPhoto = false
+			}
 			break;
 		case KeysEnum.Enter:
 			buttonTests["Enter"] = successStatusCode;
 			consoleOutput["Enter"] = "pressed";
+			if (isArtagGoing()) {
+				brick.display().clear();
+				isShowingPhoto = true;
+			}
 			break;
 		case KeysEnum.Down:
 			buttonTests["Down"] = successStatusCode;
@@ -248,18 +254,24 @@ brick.keys().buttonPressed.connect(function(b,v) {
 			script.quit(); 
 		}
 });
-	
+
+
+// Camera
 var artagValue = 0;
+var cameraOutput;
 var cameraTimer = script.timer(CAMERA_TIMER);
 cameraTimer.timeout.connect(function () {
-	
+
 	cameraTimer.stop();
 	print("Start");
-	artagValue = artagTest();
+	response = artagTest();
+	artagValue = response[0];
+	cameraOutput = response[1]
 	//print(artagValue);
 	if (artagValue == CAMERA_CHECK_VALUE) {
 		cameraTests["Camera"] = successStatusCode;
 		consoleOutput["Camera"] = artagValue;
+		isShowingPhoto = false;
 	}
 	else {
 		if (artagValue == -1)
@@ -269,6 +281,10 @@ cameraTimer.timeout.connect(function () {
 		cameraTimer.start();
 	}
 });
+
+function isArtagGoing() {
+	return artagValue != CAMERA_CHECK_VALUE && artagValue != 0
+}
 
 var consoleOutputTimer = script.timer(CONSOLE_TIMER);
 consoleOutputTimer.timeout.connect(function () {
@@ -289,19 +305,30 @@ redrawTimer.stop();
 var redrawFunc = function () {
 	redrawTimer.stop();
 	var wordStartX = 1;
-	var wordStartY = 1 * SYMBOL_HEIGHT + 10;// 10 beauty space;
 	
 	brick.display().setPainterColor("Black");
-	printCenter("TRIK Test v1.0", 0);
-	printCenter("Power button to exit ", SCREEN_HEIGHT - SYMBOL_HEIGHT * 2);		
+	if (!isShowingPhoto) {
+		printCenter("TRIK Test script", 0);
+		printCenter("Power button to exit ", SCREEN_HEIGHT - SYMBOL_HEIGHT * 2);		
 
-	brick.display().addLabel("Special thanks to bschepan ", wordStartX, SCREEN_HEIGHT - SYMBOL_HEIGHT);
+		brick.display().addLabel("Special thanks to bschepan ", wordStartX, SCREEN_HEIGHT - SYMBOL_HEIGHT);
+		
+		printStatus("E1-4,D1-2:", SYMBOL_HEIGHT * 1, edTests);
+		printStatus("A1-6: ", SYMBOL_HEIGHT * 2, aTests);
+		printStatus("Gyro,Accel:", SYMBOL_HEIGHT * 3, agTests);
+		printStatus("Camera: ", SYMBOL_HEIGHT * 4, cameraTests);
+		printStatus("🞫 ✔ ▲ ▼ ◀ ▶:", SYMBOL_HEIGHT * 5, buttonTests);
+		brick.display().setPainterColor("Black");
+
+		if (isArtagGoing) {
+			brick.display().addLabel("ENTER to see camera output", wordStartX, SCREEN_HEIGHT - SYMBOL_HEIGHT * 4);
+		}
+	}
+	else {
+		brick.display().show(cameraOutput, 160, 120, "rgb32");
+		brick.display().addLabel("ESC to main page", wordStartX, SCREEN_HEIGHT - SYMBOL_HEIGHT * 4);
+	}
 	
-	printStatus("E1-4,D1-2:", SYMBOL_HEIGHT * 1, edTests);
-	printStatus("A1-6: ", SYMBOL_HEIGHT * 2, aTests);
-	printStatus("Gyro,Accel:", SYMBOL_HEIGHT * 3, agTests);
-	printStatus("Camera: ", SYMBOL_HEIGHT * 4, cameraTests);
-	printStatus("🞫 ✔ ▲ ▼ ◀ ▶:", SYMBOL_HEIGHT * 5, buttonTests);
 	
 	brick.display().redraw();
 	redrawTimer.start();
