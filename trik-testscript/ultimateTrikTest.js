@@ -146,7 +146,7 @@ encoderTimer.timeout.connect(function () {
 	for (var i = 1; i < prevEncodersValues.length; i++) {
 		var ePort = "E" + i;
 		var mPort = "M" + i;
-		if (edTests[port] != successStatusCode) {
+		if (edTests[ePort] != successStatusCode) {
 			isFinished = false;
 			prevEncodersValues[i - 1] = encoderTest(mPort, ePort, prevEncodersValues[i - 1]);
 		}
