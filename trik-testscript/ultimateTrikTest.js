@@ -215,44 +215,18 @@ brick.keys().buttonPressed.connect(function(b) {
 		print("\033[" + cursorBackPos + "E");
 		script.quit(); 
 	}
-	switch (b) {
-		case KeysEnum.Esc:
-			buttonTests["Esc"] = successStatusCode;
-			consoleOutput["Esc"] = "pressed";
-			if (isShowingPhoto) {
-				brick.display().clear();
-				isShowingPhoto = false
-			}
-			break;
-		case KeysEnum.Enter:
-			buttonTests["Enter"] = successStatusCode;
-			consoleOutput["Enter"] = "pressed";
-			if (isArtagGoing()) {
-				brick.display().clear();
-				isShowingPhoto = true;
-			}
-			break;
-		case KeysEnum.Down:
-			buttonTests["Down"] = successStatusCode;
-			consoleOutput["Down"] = "pressed";
-			break;
-		case KeysEnum.Up:
-			buttonTests["Up"] = successStatusCode;
-			consoleOutput["Up"] = "pressed";
-			break;
-		case KeysEnum.Left:
-			buttonTests["Left"] = successStatusCode;
-			consoleOutput["Left"] = "pressed";
-			break;
-		case KeysEnum.Right:
-			buttonTests["Right"] = successStatusCode;
-			consoleOutput["Right"] = "pressed";
-			break;
-		case KeysEnum.Power: 
-			var cursorBackPos = consoleOutput.length + 1;
-			print("\033[" + cursorBackPos + "E");
-			script.quit(); 
-		}
+	buttonNames = {KeysEnum.Esc: "Esc", KeysEnum.Enter: "Enter", KeysEnum.Up: "Up", KeysEnum.Down: "Down", KeysEnum.Left: "Left", KeysEnum.Right: "Right"};
+	buttonTests[buttonNames[b]] = successStatusCode;
+	consoleOutput[buttonNames[b]] = "pressed";
+	
+	if (b == KeysEnum.Esc && isShowingPhoto) {
+		brick.display().clear();
+		isShowingPhoto = false
+	}
+	if (b == KeysEnum.Enter && isArtagGoing()) {
+		brick.display().clear();
+		isShowingPhoto = true;
+	}
 });
 
 
