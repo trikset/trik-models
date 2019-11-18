@@ -131,6 +131,7 @@ brick.display().redraw();
 
 for (var i = 1; i <= 6; i++) {
 	brick.motor('S' + i).setPower(MOTORS_START_POWER);
+	//brick.motor(S1).setPower(MOTORS_START_POWER);
 }
 
 for (var i = 1; i <= 4; i++) {
@@ -209,13 +210,20 @@ analogTimer.timeout.connect(function () {
 });
 
 // Buttons
+var buttonNames = [];
+buttonNames[KeysEnum.Enter] = "Enter";
+buttonNames[KeysEnum.Esc] = "Esc";
+buttonNames[KeysEnum.Up] = "Up";
+buttonNames[KeysEnum.Down] = "Down";
+buttonNames[KeysEnum.Left] = "Left";
+buttonNames[KeysEnum.Right] = "Right";
+
 brick.keys().buttonPressed.connect(function(b) {
 	if (b == KeysEnum.Power) { // for trikRun console
 		var cursorBackPos = consoleOutput.length + 1;
 		print("\033[" + cursorBackPos + "E");
 		script.quit(); 
 	}
-	buttonNames = {KeysEnum.Esc: "Esc", KeysEnum.Enter: "Enter", KeysEnum.Up: "Up", KeysEnum.Down: "Down", KeysEnum.Left: "Left", KeysEnum.Right: "Right"};
 	buttonTests[buttonNames[b]] = successStatusCode;
 	consoleOutput[buttonNames[b]] = "pressed";
 	
@@ -231,7 +239,7 @@ brick.keys().buttonPressed.connect(function(b) {
 
 
 // Camera
-var artagValue = 0;
+var artagValue = -1;
 var cameraOutput;
 var cameraTimer = script.timer(CAMERA_TIMER);
 cameraTimer.timeout.connect(function () {
@@ -241,7 +249,6 @@ cameraTimer.timeout.connect(function () {
 	response = artagTest();
 	artagValue = response[0];
 	cameraOutput = response[1]
-	//print(artagValue);
 	if (artagValue == CAMERA_CHECK_VALUE) {
 		cameraTests["Camera"] = successStatusCode;
 		consoleOutput["Camera"] = artagValue;
@@ -257,7 +264,7 @@ cameraTimer.timeout.connect(function () {
 });
 
 function isArtagGoing() {
-	return artagValue != CAMERA_CHECK_VALUE && artagValue != 0
+	return artagValue != CAMERA_CHECK_VALUE && artagValue != -1
 }
 
 var consoleOutputTimer = script.timer(CONSOLE_TIMER);
@@ -294,7 +301,7 @@ var redrawFunc = function () {
 		printStatus("🞫 ✔ ▲ ▼ ◀ ▶:", SYMBOL_HEIGHT * 5, buttonTests);
 		brick.display().setPainterColor("Black");
 
-		if (isArtagGoing) {
+		if (isArtagGoing()) {
 			brick.display().addLabel("ENTER to see camera output", wordStartX, SCREEN_HEIGHT - SYMBOL_HEIGHT * 4);
 		}
 	}
