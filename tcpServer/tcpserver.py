@@ -12,7 +12,7 @@ OUTPUTS = list()
 
 def get_non_blocking_server_socket():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.setblocking(0)
+    server.setblocking(False)
 
     server.bind(SERVER_ADDRESS)
 
@@ -21,13 +21,20 @@ def get_non_blocking_server_socket():
     return server
 
 
+def formatted_data_in_bytes(data: str) -> bytes:
+    return bytes(str(len(data)) + ":" + data, encoding='UTF-8')
+
+
 def handle_readables(readables, server):
     for resource in readables:
         if resource is server:
             connection, client_address = resource.accept()
-            connection.setblocking(0)
+            connection.setblocking(False)
             INPUTS.append(connection)
             print("New connection from {address}".format(address=client_address))
+            if connection not in INPUTS:
+                print("Send connection info")
+                connection.send(formatted_data_in_bytes('connection:192.168.1.113:1234:1'))
         else:
             data = ""
             try:
@@ -36,19 +43,18 @@ def handle_readables(readables, server):
             except ConnectionResetError:
                 pass
 
-            if data:  # and not str(data).__contains__('keepalive'):
-                print("getting data: {data}".format(data=data))
+            if data:
+                if True or not str(data).__contains__('keepalive'):
+                    print("getting data: {data}".format(data=data))
 
                 if resource not in OUTPUTS:
                     OUTPUTS.append(resource)
-                    resource.send(bytes('15:register:1234:1', encoding='UTF-8'))
-
+                    resource.send(formatted_data_in_bytes('connection:192.168.1.113:1234:1'))
             else:
                 clear_resource(resource)
 
 
 def clear_resource(resource):
-
     if resource in OUTPUTS:
         OUTPUTS.remove(resource)
     if resource in INPUTS:
@@ -61,8 +67,7 @@ def clear_resource(resource):
 def handle_writables(writables):
     for resource in writables:
         try:
-            resource.send(bytes('9:keepalive', encoding='UTF-8'))
-            resource.send(bytes('16:data:messageTo_2', encoding='UTF-8'))
+            resource.send(formatted_data_in_bytes('keepalive'))
         except OSError:
             clear_resource(resource)
 
@@ -77,7 +82,7 @@ if __name__ == '__main__':
             readables, writables, exceptional = select.select(INPUTS, OUTPUTS, INPUTS)
             handle_readables(readables, server_socket)
             handle_writables(writables)
-            time.sleep(1)
+            time.sleep(2)
     except KeyboardInterrupt:
         clear_resource(server_socket)
         print("Server stopped! Thank you for using!")
