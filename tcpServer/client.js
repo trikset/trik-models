@@ -4,6 +4,7 @@ var pi = 3.141592653589793;
 var main = function()
 {
 	mailbox.connect("192.168.1.113", 1234)
+	script.wait(5000)
 	print("start")
 	script.wait(1000)
 	mailbox.send("Hello World(1)!!")
