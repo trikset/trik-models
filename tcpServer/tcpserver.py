@@ -6,11 +6,17 @@ SERVER_ADDRESS = ('192.168.1.113', 1234)
 
 MAX_CONNECTIONS = 10
 
+KEEPALIVE_TIMER = 1
+
 INPUTS = list()
 OUTPUTS = list()
 
 
 def get_non_blocking_server_socket():
+    """
+    Creates non blocking server bonded on SERVER_ADDRESS
+    :return: server instance
+    """
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.setblocking(False)
 
@@ -22,19 +28,27 @@ def get_non_blocking_server_socket():
 
 
 def formatted_data_in_bytes(data: str) -> bytes:
+    """
+    Reformates string data into a bytes array `<data size>:data`
+    :param data: Data to be reformatted
+    :return: Data in bytes in the required format
+    """
     return bytes(str(len(data)) + ":" + data, encoding='UTF-8')
 
 
 def handle_readables(readables, server):
+    """
+    Processing the occurrence of events at the inputs.
+    :param readables: list of sockets
+    :param server:
+    :return:
+    """
     for resource in readables:
         if resource is server:
             connection, client_address = resource.accept()
             connection.setblocking(False)
             INPUTS.append(connection)
             print("New connection from {address}".format(address=client_address))
-            if connection not in INPUTS:
-                print("Send connection info")
-                connection.send(formatted_data_in_bytes('connection:192.168.1.113:1234:1'))
         else:
             data = ""
             try:
@@ -44,8 +58,7 @@ def handle_readables(readables, server):
                 pass
 
             if data:
-                if True or not str(data).__contains__('keepalive'):
-                    print("getting data: {data}".format(data=data))
+                print("getting data: {data}".format(data=data))
 
                 if resource not in OUTPUTS:
                     OUTPUTS.append(resource)
@@ -55,6 +68,11 @@ def handle_readables(readables, server):
 
 
 def clear_resource(resource):
+    """
+    Close connection and сleaning up socket resources
+    :param resource: Connection to be closed
+    :return:
+    """
     if resource in OUTPUTS:
         OUTPUTS.remove(resource)
     if resource in INPUTS:
@@ -65,6 +83,11 @@ def clear_resource(resource):
 
 
 def handle_writables(writables):
+    """
+    This event occurs when the space in the buffer is freed for recording.
+    :param writables: list of sockets
+    :return:
+    """
     for resource in writables:
         try:
             resource.send(formatted_data_in_bytes('keepalive'))
@@ -82,7 +105,9 @@ if __name__ == '__main__':
             readables, writables, exceptional = select.select(INPUTS, OUTPUTS, INPUTS)
             handle_readables(readables, server_socket)
             handle_writables(writables)
-            time.sleep(2)
+            # We use sleep here because we don't want to spam into a socket.
+            # You can see what I mean, by using `nc -v <server ip>` with deleted time.sleep
+            time.sleep(KEEPALIVE_TIMER)
     except KeyboardInterrupt:
         clear_resource(server_socket)
         print("Server stopped! Thank you for using!")
