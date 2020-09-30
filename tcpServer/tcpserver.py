@@ -58,18 +58,23 @@ def handle_readables(readables, server):
                 pass
 
             if data:
-                print("getting data: {data}".format(data=data))
-
+                data = str(data)
                 if resource not in OUTPUTS:
                     OUTPUTS.append(resource)
                     resource.send(formatted_data_in_bytes('connection:192.168.1.113:1234:1'))
+
+                if data.find("keyword") != -1:
+                    print("Keyword founded")
+                    resource.send(formatted_data_in_bytes('data:I find keyword in {data}'.format(data=data)))
+
+                print("getting data: {data}".format(data=data))
             else:
                 clear_resource(resource)
 
 
 def clear_resource(resource):
     """
-    Close connection and сleaning up socket resources
+    Close connection and cleaning up socket resources
     :param resource: Connection to be closed
     :return:
     """
@@ -106,7 +111,7 @@ if __name__ == '__main__':
             handle_readables(readables, server_socket)
             handle_writables(writables)
             # We use sleep here because we don't want to spam into a socket.
-            # You can see what I mean, by using `nc -v <server ip>` with deleted time.sleep
+            # You can check what I mean by using `nc -v <server ip>` with deleted time.sleep
             time.sleep(KEEPALIVE_TIMER)
     except KeyboardInterrupt:
         clear_resource(server_socket)
