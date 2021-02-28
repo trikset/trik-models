@@ -1,3 +1,7 @@
+"""
+Read https://github.com/lobe/lobe-python#lobe-python-api for help and required dependencies
+"""
+
 from lobe import ImageModel
 import socket
 import time
