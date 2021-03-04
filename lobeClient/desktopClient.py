@@ -3,7 +3,7 @@ Read https://github.com/lobe/lobe-python#lobe-python-api for help and required d
 """
 import asyncio
 from lobe import ImageModel
-from VideoCapture import Device
+import cv2
 import socket
 
 
@@ -15,9 +15,11 @@ SERVER_PORT = 8889
 KEEPALIVE_TIMER = 5
 MY_HULL_NUMBER = 1
 
-GET_IMAGES_FROM_ROBOT = True
+GET_IMAGES_FROM_ROBOT = False
 # PHOTO_PATH = 'http://' + SERVER_IP + ':8080/?action=snapshot'
 PHOTO_PATH = 'http://192.168.77.1:8080/?action=snapshot'
+
+CAMERA = cv2.VideoCapture(0)
 
 
 async def send(message, sock):
@@ -43,7 +45,12 @@ def predict(path: str):
     if GET_IMAGES_FROM_ROBOT:
         return model.predict_from_url(path).prediction
     else:
-        return model.predict(Device().getImage()).prediction
+        ret, frame = CAMERA.read()
+        if not ret:
+            return "-1"
+
+        cv2.imwrite("img_name.jpg", frame)
+        return model.predict_from_file('img_name.jpg').prediction
 
 
 async def send_keepalive(sock):
@@ -71,6 +78,7 @@ async def read_data(sock, my_loop):
 
     sock.close()
     my_loop.stop()
+    CAMERA.release()
 
 
 if __name__ == '__main__':
