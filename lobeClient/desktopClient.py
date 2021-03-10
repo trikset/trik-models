@@ -1,26 +1,30 @@
 """
 Read https://github.com/lobe/lobe-python#lobe-python-api for help and required dependencies
 """
+# IP робота или студии. Для студии обычно использовать SERVER_IP = '127.0.0.1'
+SERVER_IP = '127.0.0.1'
+# Борт номер для этого лобе сервера. Выберите не занятый роботами.
+MY_HULL_NUMBER = 1
+# Порт на котором слушает робот сервер или студия. Обычно это 8889
+SERVER_PORT = 8889
+
+# Путь к директории обученной модели Lobe. Работает с TFLite
+MODEL_PATH = 'path/to/exported/model'
+# Установить True если хотим использовать изображение с камеры ТРИК (нужно запустить mjpg-encoder)
+# Установить False если хотим использовать изображение с вебкамеры компьютера
+GET_IMAGES_FROM_ROBOT = False
+# Номер камеры в ОС Windows. Разные значения активирует разные подключенные камеры (0, 1, 2...)
+CAMERA_NUMBER = 0
+
 import subprocess
 import sys
 import asyncio
 import socket
+from PIL import Image
 
-# IP робота или студии. Для студии обычно использовать SERVER_IP = '127.0.0.1'
-SERVER_IP = '192.168.77.1'
-SERVER_PORT = 8889
+
+# Раз в сколько секунд отправлять keepalive на сервер.
 KEEPALIVE_TIMER = 5
-MY_HULL_NUMBER = 1
-
-# Путь к директории обученной модели Lobe. Работает с TFLite
-MODEL_PATH = 'path/to/exported/model'
-
-# Установить True если хотим использовать изображение с камеры ТРИК (нужно запустить mjpg-encoder)
-# Установить False если хотим использовать изображение с вебкамеры компьютера
-GET_IMAGES_FROM_ROBOT = False
-
-# Номер камеры в ОС Windows. Разные значения активирует разные подключенные камеры (0, 1, 2...)
-CAMERA_NUMBER = 0
 
 
 def install(package):
@@ -69,8 +73,8 @@ def predict(path: str):
         if not ret:
             return "-1"
 
-        cv2.imwrite("img_name.jpg", frame)
-        return model.predict_from_file('img_name.jpg').prediction
+        color_converted = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        return model.predict(Image.fromarray(color_converted)).prediction
 
 
 async def send_keepalive(sock):
@@ -102,10 +106,9 @@ async def read_data(sock, my_loop):
 
 
 if __name__ == '__main__':
+    loop = asyncio.get_event_loop()
+    server = socket.socket()
     try:
-        loop = asyncio.get_event_loop()
-
-        server = socket.socket()
         server.connect((SERVER_IP, SERVER_PORT))
 
         ip, port = server.getsockname()
@@ -119,5 +122,6 @@ if __name__ == '__main__':
         loop.run_forever()
     except KeyboardInterrupt:
         print("Connection was closed.")
+    finally:
         server.close()
         loop.stop()
