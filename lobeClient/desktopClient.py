@@ -38,7 +38,6 @@ CAMERA_NUMBER = 0
 while True:
       predict = mailbox.receive(True)
       print(predict)
-      script.wait(1000)
 """
 
 
