@@ -16,7 +16,7 @@
 # IP робота или студии. Для студии обычно использовать SERVER_IP = '127.0.0.1'
 SERVER_IP = '127.0.0.1'
 # Борт номер для этого лобе сервера. Выберите не занятый роботами.
-MY_HULL_NUMBER = 1
+MY_HULL_NUMBER = 2
 # Порт на котором слушает робот сервер или студия. Обычно это 8889
 SERVER_PORT = 8889
 
@@ -45,7 +45,6 @@ import subprocess
 import sys
 import asyncio
 import socket
-from PIL import Image
 
 
 # Раз в сколько секунд отправлять keepalive на сервер.
@@ -57,11 +56,14 @@ def install(package):
 
 
 try:
+    from PIL import Image
     import cv2
     from lobe import ImageModel
 except ImportError:
+    install('Pillow')
     install('opencv-python')
-    install('git+https://github.com/lobe/lobe-python')
+    install('lobe')
+    from PIL import Image
     import cv2
     from lobe import ImageModel
 
